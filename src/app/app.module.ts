@@ -10,12 +10,14 @@ import {MatInputModule} from '@angular/material/input';
 import {FlexLayoutModule} from '@angular/flex-layout';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import { TextComponent } from './components/text/text.component';
+import { InputComponent } from './components/input/input.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     SourceInputDialogComponent,
-    TextComponent
+    TextComponent,
+    InputComponent
   ],
   imports: [
     BrowserModule,

@@ -4,7 +4,6 @@ enthält die Definition eines Eingabeelementes, eines Textes oder eines
 Elementes zur Strukturierung. Jede Zeile enthält als erstes ein Schlüsselwort 
 und kann dahinter weitere Parameter enthalten, jeweils getrennt mit `::`.
 
-* Parameter können vom Zeilende her weggelassen werden, nicht mittendrin.
 * Am Ende einer Definitionszeile kann nach `??` noch weiterer Text angefügt werden, 
 der als Hilfe-/Hinweistext verwendet wird (Abruf über gesonderten Schalter).
 * Eine leere Zeile erzeugt einen Abstand im Formular in der Höhe eines 
@@ -48,8 +47,8 @@ header::Abschnitt 223
 |  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
 |  | 3. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
 |  | 4. Text nach dem Eingabefeld|*kein Text*|
-|  | 5. Minimalwert|-2.000.000.000|
 |  | 5. Maximalwert|2.000.000.000|
+|  | 6. Minimalwert|-2.000.000.000|
 
 #### Beispiele
 ```

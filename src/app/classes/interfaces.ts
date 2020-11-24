@@ -3,8 +3,8 @@ export enum PropertyKey {
   TEXT2,
   MAX_VALUE,
   MIN_VALUE,
-  LENGTH,
-  LINE_COUNT,
+  MAX_LENGTH,
+  LINES_NUMBER,
   HELP_TEXT
 }
 

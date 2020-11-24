@@ -11,6 +11,7 @@ export class ElementData {
   fieldType: FieldType;
   mandatory = false;
   hide = false;
+  value = '';
   properties: Map<PropertyKey, string> = new Map();
   children: ElementData[] = [];
 
@@ -25,6 +26,7 @@ export class ElementData {
         if (keywordList && keywordList.length > 0) {
           const keyword = keywordList[0];
           const parameter1 = this.getParameter(line, 1);
+          const parameter2 = this.getParameter(line, 2);
           const helpText = this.getHelpText(line);
           let ed: ElementData;
           switch (keyword) {
@@ -62,6 +64,49 @@ export class ElementData {
               }
               if (helpText) {
                 ed.setPropertyValue(PropertyKey.HELP_TEXT, helpText);
+              }
+              break;
+            case 'input-text':
+            case 'input-number':
+              if (parameter1) {
+                if (keyword === 'input-text') {
+                  ed = new ElementData(parameter1, FieldType.INPUT_TEXT);
+                } else {
+                  ed = new ElementData(parameter1, FieldType.INPUT_NUMBER);
+                }
+                if (parameter2) {
+                  ed.mandatory = parameter2 === '1';
+                }
+                const parameter3 = this.getParameter(line, 3);
+                if (parameter3) {
+                  ed.setPropertyValue(PropertyKey.TEXT, parameter3);
+                }
+                const parameter4 = this.getParameter(line, 4);
+                if (parameter4) {
+                  ed.setPropertyValue(PropertyKey.TEXT2, parameter4);
+                }
+                const parameter5 = this.getParameter(line, 5);
+                if (parameter5) {
+                  if (keyword === 'input-text') {
+                    ed.setPropertyValue(PropertyKey.LINES_NUMBER, parameter5);
+                  } else {
+                    ed.setPropertyValue(PropertyKey.MAX_VALUE, parameter5);
+                  }
+                }
+                const parameter6 = this.getParameter(line, 6);
+                if (parameter6) {
+                  if (keyword === 'input-text') {
+                    ed.setPropertyValue(PropertyKey.MAX_LENGTH, parameter6);
+                  } else {
+                    ed.setPropertyValue(PropertyKey.MIN_VALUE, parameter6);
+                  }
+                }
+                if (helpText) {
+                  ed.setPropertyValue(PropertyKey.HELP_TEXT, helpText);
+                }
+              } else {
+                ed = new ElementData('id' + idCounter.toString(), FieldType.SCRIPT_ERROR);
+                ed.setPropertyValue(PropertyKey.TEXT, 'Scriptfehler Zeile ' + lineCounter.toString() + ': Variablenname fehlt');
               }
               break;
             case 'hr':
