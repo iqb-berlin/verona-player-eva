@@ -7,40 +7,44 @@ und kann dahinter weitere Parameter enthalten, jeweils getrennt mit `::`.
 * Parameter können vom Zeilende her weggelassen werden, nicht mittendrin.
 * Am Ende einer Definitionszeile kann nach `??` noch weiterer Text angefügt werden, 
 der als Hilfe-/Hinweistext verwendet wird (Abruf über gesonderten Schalter).
-* Eine leere Zeile erzeugt einen Abstand im Formular in der Höhe einer 
-Überschrift (header, s. u.).
+* Eine leere Zeile erzeugt einen Abstand im Formular in der Höhe eines 
+Text-Elementes.
 * Vor dem Schlüsselwort können Leer- oder Tabzeichen eingefügt werden, um die 
 Lesbarkeit des Scriptes zu erhöhen. Sie werden bei der Auswertung ignoriert.
-* Wenn die Zeile mit einem unbekannten Schlüsselwort oder Zeichen beginnt, wird 
-die gesamte Zeile ignoriert. Darüber kann man Kommentare in das Script einfügen.   
 
-## Texte und Linien
+## Statische Texte, Linien, Kommentare
+Wird bei den Schlüsselworten title, header oder text der jeweilige Parameter 
+weggelassen, wird ein Zeilenabstand in der jeweiligen Höhe eingefügt.
+  
 | Schlüsselwort | Bedeutung | Parameter |
 | :------------- | :------------- | :------------- |
-| `title` | eine Zeile Text als oberste Gliederungsüberschrift | Text des Titels|
+| `title` | eine Zeile Text als oberste Gliederungsüberschrift | Text des Titels (optional)|
 | `header` | eine Zeile Text als zweite Gliederungsüberschrift | Text der Überschrift (optional)|
-| `html_text`| wird genau so in das Formular übernommen; zur Lösung besonderer Layout-Probleme| Html-Text|
+| `text` | Standard-Text | Text (optional)|
+| `html`| wird genau so in das Formular übernommen; zur Lösung besonderer Layout-Probleme| Html-Text|
 | `hr`| stellt eine horizontale Linie dar | *keine* | 
+| `rem`| leitet einen Kommentar ein, der bei der Verarbeitung ignoriert wird |  | 
 
 #### Beispiele
 ```
 title::na sowas!
-html_text::And now <strong>this text here is bolded</strong>
+html::And now <strong>this text here is bolded</strong>
 hr
-html_text::And hyperlinks such as <a href=”https://www.iqb.hu-berlin.de”>this one to the IQB website</a>
-header
+rem::ab hier noch Nummern der Fragen prüfen!!!!!
+html::And hyperlinks such as <a href=”https://www.iqb.hu-berlin.de”>this one to the IQB website</a>
+header::Abschnitt 223
 ```
 
 ## Eingabe von Text oder Zahl
 | Schlüsselwort | Parameter | Standardwert |
 | :------------- | :------------- | :------------- |
-| `input_text` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
+| `input-text` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
 |  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
 |  | 3. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
 |  | 4. Text nach dem Eingabefeld|*kein Text*|
 |  | 5. Anzahl von Zeilen (>1 bedeutet mehrzeiliges Eingabefeld)|1|
 |  | 6. maximale Anzahl von Zeichen bei der Eingabe|*unbegrenzt*
-| `input_number` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
+| `input-number` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
 |  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
 |  | 3. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
 |  | 4. Text nach dem Eingabefeld|*kein Text*|
@@ -49,17 +53,18 @@ header
 
 #### Beispiele
 ```
-input_number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::0::1
-input_text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
+input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::0::1
+input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
 ```
 ## Ankreuzen
 | Schlüsselwort | Parameter | Standardwert |
 | :------------- | :------------- | :------------- |
 | `checkbox` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
 |  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
+|  | Achtung: Pflichtfeld bedeutet hier, dass die Checkbox ausgewählt/angekreuzt sein muss (z. B. Zustimmung zu Datenschutzfragen).||
 |  | 3. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
 |  | 4. Text nach dem Eingabefeld|*kein Text*|
-| `multiple_choice` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
+| `multiple-choice` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
 |  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
 |  | 3. Liste der Optionen, jeweils getrennt durch `##`|*keine*|
 |  | Achtung: Als Wert der Variablen wird die Position der gewählten Option gespeichert, beginnend mit `1` - wenn nichts gewählt wurde, dann wird `0` gespeichert.||
@@ -67,32 +72,33 @@ input_text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
 #### Beispiele
 ```
 checkbox::task162ahmfF::0::Sie fühlen sich beunruhigt
-multiple_choice::task3wtrtimeS::1::trifft gar nicht zu##trifft eher nicht zu##trifft eher zu##trifft voll zu
+multiple-choice::task3wtrtimeS::1::trifft gar nicht zu##trifft eher nicht zu##trifft eher zu##trifft voll zu
 ```
 
 ## Schleifen
-`repeat_start` und `repeat_end` markieren einen Block von Elementen, der während der Beantwortung dynamisch 
+`repeat-start` und `repeat-end` markieren einen Block von Elementen, der während der Beantwortung dynamisch 
 mehrfach erzeugt wird. Dazu muss die befragte Person eine Zahl eingeben, die die Anzahl der Wiederholungen steuert. 
 Alle Variablennamen der im Block befindlichen Eingabeelemente erhalten für den jeweiligen Blockdurchlauf einen  
 Suffix: '_' + laufende Nummer des aktuellen Blockdurchlaufes, beginnend mit '_1'.
  
 | Schlüsselwort | Parameter | Standardwert |
 | :------------- | :------------- | :------------- |
-| `repeat_start` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
+| `repeat-start` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
 |  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
 |  | 3. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
 |  | 4. Text für die Überschrift zu Beginn jeden Blockes (Blocknummer wird jeweils dynamisch dahinter gesetzt)|'Block'|
 |  | 5. Maximalwert für die Anzahl der Blöcke|10|
-| `repeat_end` | *keine* ||
+| `repeat-end` | *keine* ||
 
 
 #### Beispiel
 ```
-repeat_start::examineecount::0::Wie viele Prüflinge gibt es?::Angaben zu Prüfling::20??Sie können Angaben zu maximal 20 Prüflingen eintragen. Sollten sich im Kurs mehr als 20 Prüflinge befinden, ist eine Auswahl vorzunehmen. Diese Auswahl sollte so erfolgen, dass ein möglichst breites Leistungsspektrum abgebildet wird. Vermieden werden sollte eine selektive Berücksichtigung bzw. Nichtberücksichtigung bestimmter Gruppen (z. B. besonders leistungsschwache oder leistungsstarke Prüflinge, Schülerinnen und Schüler mit nichtdeutscher Herkunftssprache).
-    input_number::task1::1::Teilaufgabe 1::::0::1
-    input_number::task2::1::Teilaufgabe 2::::0::1
-    input_number::task3::1::Teilaufgabe 3::::0::1
-repeat_end
+rem::Schleife für alle Prüflinge
+repeat-start::examineecount::0::Wie viele Prüflinge gibt es?::Angaben zu Prüfling::20??Sie können Angaben zu maximal 20 Prüflingen eintragen. Sollten sich im Kurs mehr als 20 Prüflinge befinden, ist eine Auswahl vorzunehmen. Diese Auswahl sollte so erfolgen, dass ein möglichst breites Leistungsspektrum abgebildet wird. Vermieden werden sollte eine selektive Berücksichtigung bzw. Nichtberücksichtigung bestimmter Gruppen (z. B. besonders leistungsschwache oder leistungsstarke Prüflinge, Schülerinnen und Schüler mit nichtdeutscher Herkunftssprache).
+    input-number::task1::1::Teilaufgabe 1::::0::1
+    input-number::task2::1::Teilaufgabe 2::::0::1
+    input-number::task3::1::Teilaufgabe 3::::0::1
+repeat-end
 ```
 führt z. B. zu folgenden Daten
 ```
@@ -109,14 +115,14 @@ task3_3;6
 ```
 
 ## Ausblenden/Einblenden
-`if_start` und `if_end` markieren einen Block von Elementen, der in Abhängigkeit des Wertes einer 
+`if-start` und `if-end` markieren einen Block von Elementen, der in Abhängigkeit des Wertes einer 
 Variablen gezeigt oder ausgeblendet wird. Dabei wird der eingegebene Wert 
-mit einem Sollwert verglichen. Mit `if_else` können Elemente ein-/ausgeblendet werden, wenn
-der Wert nicht mit dem Sollwert übereinstimmt. 
+mit einem Sollwert verglichen. Mit `if-else` können Elemente ein-/ausgeblendet werden, wenn
+der Wert **nicht** mit dem Sollwert übereinstimmt. 
  
 | Schlüsselwort | Parameter |
 | :------------- | :------------- |
-| `if_start` | 1. Name der Variablen, deren Wert geprüft werden soll|
+| `if-start` | 1. Name der Variablen, deren Wert geprüft werden soll|
 |  | 2. Wert|
-| `if_else` | *keine*|
-| `if_end` | *keine*|
+| `if-else` | *keine*|
+| `if-end` | *keine*|

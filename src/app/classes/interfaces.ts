@@ -1,0 +1,22 @@
+export enum PropertyKey {
+  TEXT,
+  TEXT2,
+  MAX_VALUE,
+  MIN_VALUE,
+  LENGTH,
+  LINE_COUNT
+}
+
+export enum FieldType {
+  EMPTY_LINE,
+  TEXT,
+  HEADER,
+  TITLE,
+  INPUT_TEXT,
+  INPUT_NUMBER,
+  HTML,
+  HR,
+  CHECKBOX,
+  MULTIPLE_CHOICE,
+  REPEAT_CONTROL
+}
