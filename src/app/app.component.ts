@@ -22,14 +22,13 @@ export class AppComponent {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log(result);
+        this.elements = ElementData.parseScript(result.split('\n'));
       } else {
         this.elements = [];
         this.elements.push(new ElementData('c1', FieldType.HEADER));
         const ed = new ElementData('cancelled', FieldType.TEXT);
         ed.setPropertyValue(PropertyKey.TEXT, 'Abgebrochen');
         this.elements.push(ed);
-        console.log(this.elements);
       }
     });
   }

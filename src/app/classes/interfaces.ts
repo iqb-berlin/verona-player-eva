@@ -4,11 +4,11 @@ export enum PropertyKey {
   MAX_VALUE,
   MIN_VALUE,
   LENGTH,
-  LINE_COUNT
+  LINE_COUNT,
+  HELP_TEXT
 }
 
 export enum FieldType {
-  EMPTY_LINE,
   TEXT,
   HEADER,
   TITLE,
@@ -18,5 +18,6 @@ export enum FieldType {
   HR,
   CHECKBOX,
   MULTIPLE_CHOICE,
-  REPEAT_CONTROL
+  REPEAT_CONTROL,
+  SCRIPT_ERROR
 }

@@ -7,6 +7,7 @@ import {FieldType, PropertyKey} from '../../classes/interfaces';
   template: `
     <ng-container *ngIf="content" [ngSwitch]="elementData.fieldType">
       <p *ngSwitchCase="fieldType.TEXT">{{content}}</p>
+      <p *ngSwitchCase="fieldType.SCRIPT_ERROR" class="script-error">{{content}}</p>
       <h1 *ngSwitchCase="fieldType.TITLE">{{content}}</h1>
       <h2 *ngSwitchCase="fieldType.HEADER">{{content}}</h2>
       <span *ngSwitchCase="fieldType.HTML" [outerHTML]="content"></span>

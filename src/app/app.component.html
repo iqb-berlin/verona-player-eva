@@ -4,6 +4,10 @@
     <ng-container [ngSwitch]="e.fieldType">
       <app-text *ngSwitchCase="fieldType.TEXT" [elementData]="e"></app-text>
       <app-text *ngSwitchCase="fieldType.HEADER" [elementData]="e"></app-text>
+      <app-text *ngSwitchCase="fieldType.HTML" [elementData]="e"></app-text>
+      <app-text *ngSwitchCase="fieldType.HR" [elementData]="e"></app-text>
+      <app-text *ngSwitchCase="fieldType.TITLE" [elementData]="e"></app-text>
+      <app-text *ngSwitchCase="fieldType.SCRIPT_ERROR" [elementData]="e"></app-text>
     </ng-container>
   </div>
 
