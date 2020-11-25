@@ -7,27 +7,31 @@ import {Subscription} from 'rxjs';
 @Component({
   selector: 'app-input',
   template: `
-    <div fxLayout="row">
-      <p *ngIf="preText">{{preText}}</p>
-      <mat-form-field *ngIf="linesNumber > 1" appearance="fill">
-        <textarea matInput mat-autosize [formControl]="textInputControl" [matAutosizeMaxRows]="linesNumber" autocomplete="off"></textarea>
-        <mat-error *ngIf="textInputControl.errors">
-          {{textInputControl.errors | errorTransform}}
-        </mat-error>
-      </mat-form-field>
-      <mat-form-field *ngIf="linesNumber <= 1 && elementData.fieldType === fieldType.INPUT_TEXT" appearance="fill">
-        <input matInput [formControl]="textInputControl" autocomplete="off"/>
-        <mat-error *ngIf="textInputControl.errors">
-          {{textInputControl.errors | errorTransform}}
-        </mat-error>
-      </mat-form-field>
-      <mat-form-field *ngIf="linesNumber <= 1 && elementData.fieldType === fieldType.INPUT_NUMBER" appearance="fill">
-        <input matInput [formControl]="numberInputControl" autocomplete="off"/>
-        <mat-error *ngIf="numberInputControl.errors">
-          {{numberInputControl.errors | errorTransform}}
-        </mat-error>
-      </mat-form-field>
-      <p *ngIf="postText">{{postText}}</p>
+    <div fxLayout="row" fxLayoutAlign="space-between center" fxFill>
+      <div fxFlex="50" *ngIf="preText">
+        <p>{{preText}}</p>
+      </div>
+      <div fxFlex="50" fxLayout="row">
+        <mat-form-field *ngIf="linesNumber > 1" appearance="fill" fxFlex="90" fxFlexAlign="start">
+          <textarea matInput mat-autosize [formControl]="textInputControl" [matAutosizeMaxRows]="linesNumber" autocomplete="off"></textarea>
+          <mat-error *ngIf="textInputControl.errors">
+            {{textInputControl.errors | errorTransform}}
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field *ngIf="linesNumber <= 1 && elementData.fieldType === fieldType.INPUT_TEXT" fxFlexAlign="start" appearance="fill" fxFlex="50">
+          <input matInput [formControl]="textInputControl" autocomplete="off"/>
+          <mat-error *ngIf="textInputControl.errors">
+            {{textInputControl.errors | errorTransform}}
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field *ngIf="linesNumber <= 1 && elementData.fieldType === fieldType.INPUT_NUMBER" appearance="fill" fxFlexAlign="start" fxFlex="50">
+          <input matInput [formControl]="numberInputControl" autocomplete="off"/>
+          <mat-error *ngIf="numberInputControl.errors">
+            {{numberInputControl.errors | errorTransform}}
+          </mat-error>
+        </mat-form-field>
+        <p *ngIf="postText">{{postText}}</p>
+      </div>
     </div>
   `
 })

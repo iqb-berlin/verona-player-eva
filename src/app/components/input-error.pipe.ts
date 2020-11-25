@@ -7,7 +7,8 @@ export class InputErrorPipe implements PipeTransform {
     max: 'Wert zu groß',
     min: 'Wert zu klein',
     pattern: 'unerlaubte Zeichen',
-    required: 'Eingabe erforderlich'
+    required: 'Eingabe erforderlich',
+    maxlength: 'zu lang'
   };
 
   public transform(errors: ValidationErrors | null): string {

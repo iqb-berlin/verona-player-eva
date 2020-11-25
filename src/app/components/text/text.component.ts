@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ElementComponent} from '../element.component';
 import {FieldType, PropertyKey} from '../../classes/interfaces';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-text',
@@ -10,7 +11,7 @@ import {FieldType, PropertyKey} from '../../classes/interfaces';
       <p *ngSwitchCase="fieldType.SCRIPT_ERROR" class="script-error">{{content}}</p>
       <h1 *ngSwitchCase="fieldType.TITLE">{{content}}</h1>
       <h2 *ngSwitchCase="fieldType.HEADER">{{content}}</h2>
-      <span *ngSwitchCase="fieldType.HTML" [outerHTML]="content"></span>
+      <div *ngSwitchCase="fieldType.HTML" [innerHTML]="content"></div>
     </ng-container>
 
     <ng-container *ngIf="!content" [ngSwitch]="elementData.fieldType">
@@ -23,12 +24,21 @@ import {FieldType, PropertyKey} from '../../classes/interfaces';
   styleUrls: ['./text.component.sass']
 })
 export class TextComponent extends ElementComponent implements OnInit {
-  content: string;
+  content: string | SafeHtml;
   fieldType = FieldType;
 
+  constructor(private sanitizer: DomSanitizer) {
+    super();
+  }
+
   ngOnInit(): void {
-    this.content = this.elementData.getPropertyValue(PropertyKey.TEXT);
-    // todo add validator
-    // todo sanitize html
+    if (this.elementData) {
+      if (this.elementData.fieldType === FieldType.HTML) {
+        this.content = this.sanitizer.bypassSecurityTrustHtml(this.elementData.getPropertyValue(PropertyKey.TEXT));
+        // todo how to keep urls?
+      } else {
+        this.content = this.elementData.getPropertyValue(PropertyKey.TEXT);
+      }
+    }
   }
 }

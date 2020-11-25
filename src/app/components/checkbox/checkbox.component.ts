@@ -5,12 +5,17 @@ import {PropertyKey} from '../../classes/interfaces';
 @Component({
   selector: 'app-checkbox',
   template: `
-    <div fxLayout="row">
-      <label *ngIf="preText">{{preText}}</label>
-      <mat-checkbox [(ngModel)]="valueBool">{{postText}}</mat-checkbox>
+    <div fxLayout="row" fxLayoutAlign="space-between center" fxFill>
+      <div fxFlex="50" *ngIf="preText">
+        <p>{{preText}}</p>
+      </div>
+      <div fxFlex="50">
+          <mat-checkbox class="chb" [(ngModel)]="valueBool">{{postText}}</mat-checkbox>
+      </div>
     </div>
   `,
-  styleUrls: ['./checkbox.component.sass']
+  styles: [
+    '.chb {margin: 5px;}']
 })
 export class CheckboxComponent extends ElementComponent implements OnInit {
   preText = '';
