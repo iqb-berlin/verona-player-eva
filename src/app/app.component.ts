@@ -25,9 +25,12 @@ multiple-choice::mc433::0::label für MC::Apfel##Birne##Banane##Orange
 drop-down::mc4344::0::label für Dropdown::Apfel##Birne##Banane##Orange
 text::so was geht doch ü
 hr
+
 title::Titel
 text::so was geht doch ö
-input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::0::1
+
+input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::2::11
+input-text::task12a::1::Teilaufgabe 1.3a (Geo)::::0::1
 input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
     `;
     this.elements = ElementData.parseScript(myScript.split('\n'));

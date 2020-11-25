@@ -11,12 +11,14 @@ import {FlexLayoutModule} from '@angular/flex-layout';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import { TextComponent } from './components/text/text.component';
 import { InputComponent } from './components/input/input.component';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { CheckboxComponent } from './components/checkbox/checkbox.component';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import { SelectComponent } from './components/select/select.component';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatSelectModule} from '@angular/material/select';
+import {MatCardModule} from '@angular/material/card';
+import {InputErrorPipe} from './components/input-error.pipe';
 
 @NgModule({
   declarations: [
@@ -25,7 +27,8 @@ import {MatSelectModule} from '@angular/material/select';
     TextComponent,
     InputComponent,
     CheckboxComponent,
-    SelectComponent
+    SelectComponent,
+    InputErrorPipe
   ],
   imports: [
     BrowserModule,
@@ -38,7 +41,9 @@ import {MatSelectModule} from '@angular/material/select';
     FormsModule,
     MatCheckboxModule,
     MatRadioModule,
-    MatSelectModule
+    MatSelectModule,
+    MatCardModule,
+    ReactiveFormsModule
   ],
   providers: [],
   entryComponents: [

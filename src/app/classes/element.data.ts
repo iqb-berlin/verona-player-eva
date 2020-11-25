@@ -9,7 +9,7 @@ export class ElementData {
   id = '';
   alias = '';
   fieldType: FieldType;
-  mandatory = false;
+  required = false;
   hide = false;
   value = '';
   properties: Map<PropertyKey, string> = new Map();
@@ -21,7 +21,9 @@ export class ElementData {
     let lineCounter = 0;
     scriptLines.forEach(line => {
       lineCounter += 1;
-      if (line) {
+      if (!line) {
+        myReturn.push(new ElementData('id' + idCounter.toString(), FieldType.TEXT));
+      } else {
         const keywordList = line.match(/[a-z\-]+/);
         if (keywordList && keywordList.length > 0) {
           const keyword = keywordList[0];
@@ -84,7 +86,7 @@ export class ElementData {
                   ed = new ElementData(parameter1, FieldType.DROP_DOWN);
                 }
                 if (parameter2) {
-                  ed.mandatory = parameter2 === '1';
+                  ed.required = parameter2 === '1';
                 }
                 const parameter3 = this.getParameter(line, 3);
                 if (parameter3) {
@@ -100,7 +102,7 @@ export class ElementData {
                     if (keyword === 'input-text') {
                       ed.setPropertyValue(PropertyKey.LINES_NUMBER, parameter5);
                     } else {
-                      ed.setPropertyValue(PropertyKey.MAX_VALUE, parameter5);
+                      ed.setPropertyValue(PropertyKey.MIN_VALUE, parameter5);
                     }
                   }
                   const parameter6 = this.getParameter(line, 6);
@@ -108,7 +110,7 @@ export class ElementData {
                     if (keyword === 'input-text') {
                       ed.setPropertyValue(PropertyKey.MAX_LENGTH, parameter6);
                     } else {
-                      ed.setPropertyValue(PropertyKey.MIN_VALUE, parameter6);
+                      ed.setPropertyValue(PropertyKey.MAX_VALUE, parameter6);
                     }
                   }
                 }
@@ -131,8 +133,6 @@ export class ElementData {
             myReturn.push(ed);
           }
         }
-      } else {
-        myReturn.push(new ElementData('id' + idCounter.toString(), FieldType.TEXT));
       }
 
       idCounter += 1;

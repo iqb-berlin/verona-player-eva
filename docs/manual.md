@@ -47,8 +47,8 @@ header::Abschnitt 223
 |  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
 |  | 3. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
 |  | 4. Text nach dem Eingabefeld|*kein Text*|
-|  | 5. Maximalwert|2.000.000.000|
-|  | 6. Minimalwert|-2.000.000.000|
+|  | 5. Minimalwert|*kein*|
+|  | 6. Maximalwert|*kein*|
 
 #### Beispiele
 ```
