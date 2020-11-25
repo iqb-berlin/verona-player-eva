@@ -28,5 +28,7 @@ export class TextComponent extends ElementComponent implements OnInit {
 
   ngOnInit(): void {
     this.content = this.elementData.getPropertyValue(PropertyKey.TEXT);
+    // todo add validator
+    // todo sanitize html
   }
 }

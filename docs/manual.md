@@ -55,7 +55,11 @@ header::Abschnitt 223
 input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::0::1
 input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
 ```
-## Ankreuzen
+## Ankreuzen/Auswählen
+Bei einer `checkbox` kreuzt man nur an. Bei `multiple-choice` werden die Optionen 
+untereinander dargestellt und es kann nur eine Option ausgewählt werden. Bei
+`drop-down` werden die Optionen in eine Klappbox gepackt, was Platz spart.  
+
 | Schlüsselwort | Parameter | Standardwert |
 | :------------- | :------------- | :------------- |
 | `checkbox` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
@@ -63,10 +67,12 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
 |  | Achtung: Pflichtfeld bedeutet hier, dass die Checkbox ausgewählt/angekreuzt sein muss (z. B. Zustimmung zu Datenschutzfragen).||
 |  | 3. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
 |  | 4. Text nach dem Eingabefeld|*kein Text*|
-| `multiple-choice` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
+|  | Achtung: Als Wert der Variablen wird 'true' oder '' (leer) gespeichert.||
+| `multiple-choice` oder `drop-down`| 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
 |  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
-|  | 3. Liste der Optionen, jeweils getrennt durch `##`|*keine*|
-|  | Achtung: Als Wert der Variablen wird die Position der gewählten Option gespeichert, beginnend mit `1` - wenn nichts gewählt wurde, dann wird `0` gespeichert.||
+|  | 3. Text vor der Optionsliste (Eingabeaufforderung)|*kein Text*|
+|  | 4. Liste der Optionen, jeweils getrennt durch `##`|*keine*|
+|  | Achtung: Als Wert der Variablen wird die Position der gewählten Option gespeichert, beginnend mit `1`.||
 
 #### Beispiele
 ```

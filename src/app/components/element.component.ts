@@ -10,15 +10,14 @@ export abstract class ElementComponent {
 
   set value(value: string) {
     if (this.elementData) {
-      this.elementData.value$.next(value);
-      console.log(value);
+      this.elementData.value = value;
       this.elementDataChange.emit(this.elementData);
       this.valueChange.emit(value);
     }
   }
   get value(): string {
     if (this.elementData) {
-      return this.elementData.value$.getValue();
+      return this.elementData.value;
     } else {
       return '';
     }

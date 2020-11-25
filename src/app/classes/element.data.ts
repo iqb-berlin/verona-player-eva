@@ -1,5 +1,4 @@
 import {FieldType, PropertyKey} from './interfaces';
-import {BehaviorSubject} from 'rxjs';
 
 export class ElementData {
 
@@ -12,7 +11,7 @@ export class ElementData {
   fieldType: FieldType;
   mandatory = false;
   hide = false;
-  value$ = new BehaviorSubject<string>('');
+  value = '';
   properties: Map<PropertyKey, string> = new Map();
   children: ElementData[] = [];
 
@@ -69,11 +68,20 @@ export class ElementData {
               break;
             case 'input-text':
             case 'input-number':
+            case 'checkbox':
+            case 'multiple-choice':
+            case 'drop-down':
               if (parameter1) {
                 if (keyword === 'input-text') {
                   ed = new ElementData(parameter1, FieldType.INPUT_TEXT);
-                } else {
+                } else if (keyword === 'input-number') {
                   ed = new ElementData(parameter1, FieldType.INPUT_NUMBER);
+                } else if (keyword === 'checkbox') {
+                  ed = new ElementData(parameter1, FieldType.CHECKBOX);
+                } else if (keyword === 'multiple-choice') {
+                  ed = new ElementData(parameter1, FieldType.MULTIPLE_CHOICE);
+                } else if (keyword === 'drop-down') {
+                  ed = new ElementData(parameter1, FieldType.DROP_DOWN);
                 }
                 if (parameter2) {
                   ed.mandatory = parameter2 === '1';
@@ -86,20 +94,22 @@ export class ElementData {
                 if (parameter4) {
                   ed.setPropertyValue(PropertyKey.TEXT2, parameter4);
                 }
-                const parameter5 = this.getParameter(line, 5);
-                if (parameter5) {
-                  if (keyword === 'input-text') {
-                    ed.setPropertyValue(PropertyKey.LINES_NUMBER, parameter5);
-                  } else {
-                    ed.setPropertyValue(PropertyKey.MAX_VALUE, parameter5);
+                if (keyword === 'input-number' || keyword === 'input-text') {
+                  const parameter5 = this.getParameter(line, 5);
+                  if (parameter5) {
+                    if (keyword === 'input-text') {
+                      ed.setPropertyValue(PropertyKey.LINES_NUMBER, parameter5);
+                    } else {
+                      ed.setPropertyValue(PropertyKey.MAX_VALUE, parameter5);
+                    }
                   }
-                }
-                const parameter6 = this.getParameter(line, 6);
-                if (parameter6) {
-                  if (keyword === 'input-text') {
-                    ed.setPropertyValue(PropertyKey.MAX_LENGTH, parameter6);
-                  } else {
-                    ed.setPropertyValue(PropertyKey.MIN_VALUE, parameter6);
+                  const parameter6 = this.getParameter(line, 6);
+                  if (parameter6) {
+                    if (keyword === 'input-text') {
+                      ed.setPropertyValue(PropertyKey.MAX_LENGTH, parameter6);
+                    } else {
+                      ed.setPropertyValue(PropertyKey.MIN_VALUE, parameter6);
+                    }
                   }
                 }
                 if (helpText) {

@@ -18,6 +18,7 @@ export enum FieldType {
   HR,
   CHECKBOX,
   MULTIPLE_CHOICE,
+  DROP_DOWN,
   REPEAT_CONTROL,
   SCRIPT_ERROR
 }
