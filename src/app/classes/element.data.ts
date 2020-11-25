@@ -1,4 +1,5 @@
 import {FieldType, PropertyKey} from './interfaces';
+import {BehaviorSubject} from 'rxjs';
 
 export class ElementData {
 
@@ -11,7 +12,7 @@ export class ElementData {
   fieldType: FieldType;
   mandatory = false;
   hide = false;
-  value = '';
+  value$ = new BehaviorSubject<string>('');
   properties: Map<PropertyKey, string> = new Map();
   children: ElementData[] = [];
 
@@ -146,7 +147,6 @@ export class ElementData {
     return this.properties.get(key);
   }
   setPropertyValue(key: PropertyKey, value: string) {
-    console.log(value);
     this.properties.set(key, value);
   }
 }

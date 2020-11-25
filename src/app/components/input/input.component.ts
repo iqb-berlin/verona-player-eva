@@ -8,10 +8,10 @@ import {FieldType, PropertyKey} from '../../classes/interfaces';
     <div fxLayout="row">
       <p *ngIf="preText">{{preText}}</p>
       <mat-form-field *ngIf="linesNumber > 1">
-        <textarea matInput [value]="elementData.value" [rows]="linesNumber"></textarea>
+        <textarea matInput [(ngModel)]="value" [rows]="linesNumber" autocomplete="off"></textarea>
       </mat-form-field>
       <mat-form-field *ngIf="linesNumber === 1">
-        <input matInput [id]="elementData.id"/>
+        <input matInput [id]="elementData.id" [(ngModel)]="value" autocomplete="off"/>
       </mat-form-field>
       <p *ngIf="postText">{{postText}}</p>
     </div>

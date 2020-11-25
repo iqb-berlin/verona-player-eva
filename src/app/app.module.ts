@@ -11,6 +11,7 @@ import {FlexLayoutModule} from '@angular/flex-layout';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import { TextComponent } from './components/text/text.component';
 import { InputComponent } from './components/input/input.component';
+import {FormsModule} from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { InputComponent } from './components/input/input.component';
     MatButtonModule,
     MatInputModule,
     FlexLayoutModule,
-    MatTooltipModule
+    MatTooltipModule,
+    FormsModule
   ],
   providers: [],
   entryComponents: [

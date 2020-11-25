@@ -32,4 +32,10 @@ export class AppComponent {
       }
     });
   }
+
+  elementValueChanged() {
+    this.elements.forEach(e => {
+      console.log(e.id + ': ' + e.value$.getValue());
+    });
+  }
 }
