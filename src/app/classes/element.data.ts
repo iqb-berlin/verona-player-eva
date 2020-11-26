@@ -82,8 +82,10 @@ export class ElementData {
                   ed = new ElementData(parameter1, FieldType.CHECKBOX);
                 } else if (keyword === 'multiple-choice') {
                   ed = new ElementData(parameter1, FieldType.MULTIPLE_CHOICE);
+                  ed.value = '2';
                 } else if (keyword === 'drop-down') {
                   ed = new ElementData(parameter1, FieldType.DROP_DOWN);
+                  ed.value = '1';
                 }
                 if (parameter2) {
                   ed.required = parameter2 === '1';

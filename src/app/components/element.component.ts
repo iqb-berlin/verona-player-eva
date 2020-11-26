@@ -1,10 +1,12 @@
 import { Directive, Input, EventEmitter, Output} from '@angular/core';
 import {ElementData} from '../classes/element.data';
+import {FormGroup} from '@angular/forms';
 
 @Directive()
 // tslint:disable-next-line:directive-class-suffix
 export abstract class ElementComponent {
   @Input() elementData: ElementData;
+  @Input() parentForm: FormGroup;
   @Output() elementDataChange = new EventEmitter<ElementData>();
   @Output() valueChange = new EventEmitter<string>();
 

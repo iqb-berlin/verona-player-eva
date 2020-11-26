@@ -8,36 +8,30 @@ export class InputErrorPipe implements PipeTransform {
     min: 'Wert zu klein',
     pattern: 'unerlaubte Zeichen',
     required: 'Eingabe erforderlich',
+    requiredCheckbox: 'Ankreuzen erforderlich',
     maxlength: 'zu lang'
   };
 
-  public transform(errors: ValidationErrors | null): string {
+  public transform(errors?: ValidationErrors, isCheckbox?: boolean): string {
     if (errors) {
       let returnMessage = '';
-      Object.keys(this.errorMessages).forEach(msgKey => {
-        if (errors.hasOwnProperty(msgKey)) {
-          if (returnMessage) {
-            returnMessage += '; ';
-          } else {
-            returnMessage += ': ';
-          }
-          returnMessage += this.errorMessages[msgKey];
+      Object.keys(errors).forEach(errKey => {
+        if (returnMessage) {
+          returnMessage += '; ';
+        } else {
+          returnMessage += ': ';
         }
-      });
-      Object.keys(errors).forEach(errorKey => {
-        if (!this.errorMessages.hasOwnProperty(errorKey)) {
-          if (returnMessage) {
-            returnMessage += '; ';
-          } else {
-            returnMessage += ': ';
-          }
-          returnMessage += errorKey;
+        const msgKey = isCheckbox ? errKey + 'Checkbox' : errKey;
+        if (this.errorMessages.hasOwnProperty(msgKey)) {
+          returnMessage += this.errorMessages[msgKey];
+        } else {
+          returnMessage += msgKey;
         }
       });
       if (!returnMessage) {
         returnMessage = '!';
       }
-      return 'Bitte korrigieren Sie die Eingabe' + returnMessage;
+      return 'Bitte korrigieren' + returnMessage;
     } else {
       return '';
     }
