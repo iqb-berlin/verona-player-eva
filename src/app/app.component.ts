@@ -1,9 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {SourceInputDialogComponent} from './source-input-dialog/source-input-dialog.component';
-import {ElementData} from './classes/element.data';
+import {UIElement} from './classes/UIElement';
 import {FieldType, PropertyKey} from './classes/interfaces';
 import {FormGroup} from '@angular/forms';
+import {UIBlock} from './classes/UIBlock';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,7 @@ import {FormGroup} from '@angular/forms';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  elements: ElementData[] = [];
+  rootBlock = new UIBlock();
   fieldType = FieldType;
   form = new FormGroup({});
 
@@ -30,13 +31,19 @@ text::so was geht doch ü
 hr
 
 title::Titel
+repeat-start::examineecount::Wie viele Prüflinge gibt es?::Angaben zu Prüfling::20??Sie können Angaben zu maximal 20 Prüflingen eintragen. Sollten sich im Kurs mehr als 20 Prüflinge befinden, ist eine Auswahl vorzunehmen. Diese Auswahl sollte so erfolgen, dass ein möglichst breites Leistungsspektrum abgebildet wird. Vermieden werden sollte eine selektive Berücksichtigung bzw. Nichtberücksichtigung bestimmter Gruppen (z. B. besonders leistungsschwache oder leistungsstarke Prüflinge, Schülerinnen und Schüler mit nichtdeutscher Herkunftssprache).
+    input-number::task1::1::Teilaufgabe 1::::0::10
+    input-number::task2::1::Teilaufgabe 2::::0::10
+    input-number::task3::1::Teilaufgabe 3::::0::10
+repeat-end
 text::so was geht doch ö
 
 input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::2::11
 input-text::task12a::1::Teilaufgabe 1.3a (Geo)::Balksisi aoisdfj oaisjioadm aosicj aoisjaoisjad oasijd
 input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
-    `;
-    this.elements = ElementData.parseScript(myScript.split('\n'));
+`;
+    this.rootBlock = UIBlock.parseScript(myScript.split('\n'));
+    console.log(this.rootBlock);
   }
 
   setNewScript() {
@@ -46,21 +53,26 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.elements = ElementData.parseScript(result.split('\n'));
+        this.rootBlock = UIBlock.parseScript(result.split('\n'));
       } else {
-        this.elements = [];
-        this.elements.push(new ElementData('c1', FieldType.HEADER));
-        const ed = new ElementData('cancelled', FieldType.TEXT);
-        ed.setPropertyValue(PropertyKey.TEXT, 'Abgebrochen');
-        this.elements.push(ed);
+        this.rootBlock = new UIBlock();
+        this.rootBlock.elements.push(new UIElement('c1', FieldType.HEADER));
+        const ed = new UIElement('cancelled', FieldType.SCRIPT_ERROR);
+        ed.properties.set(PropertyKey.TEXT, 'Abgebrochen');
+        this.rootBlock.elements.push(ed);
       }
     });
   }
 
   elementValueChanged() {
-    this.elements.forEach(e => {
-      if (e.value) {
-        console.log(e.id + ': ' + e.value);
+    this.logBlock(this.rootBlock, 0);
+  }
+  private logBlock(b: UIBlock, indent: number) {
+    b.elements.forEach((e: UIBlock | UIElement) => {
+      if (e instanceof UIElement) {
+        console.log(' '.repeat(indent) + e.id + ': ' + e.value);
+      } else {
+        this.logBlock(e, indent + 2);
       }
     });
   }

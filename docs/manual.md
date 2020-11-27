@@ -52,7 +52,7 @@ header::Abschnitt 223
 
 #### Beispiele
 ```
-input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::0::1
+input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::0::10
 input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
 ```
 ## Ankreuzen/Auswählen
@@ -88,21 +88,20 @@ Suffix: '_' + laufende Nummer des aktuellen Blockdurchlaufes, beginnend mit '_1'
  
 | Schlüsselwort | Parameter | Standardwert |
 | :------------- | :------------- | :------------- |
-| `repeat-start` | 1. Name der Variablen, in die die Eingabe gespeichert werden soll | *Angabe ist erforderlich*|
-|  | 2. Pflichtfeld: `0`=nein, `1`=ja|`0`|
-|  | 3. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
-|  | 4. Text für die Überschrift zu Beginn jeden Blockes (Blocknummer wird jeweils dynamisch dahinter gesetzt)|'Block'|
-|  | 5. Maximalwert für die Anzahl der Blöcke|10|
+| `repeat-start` | 1. Name der Variablen, in die die Eingabe (Anzahl) gespeichert werden soll | *Angabe ist erforderlich*|
+|  | 2. Text vor dem Eingabefeld (Eingabeaufforderung)|*kein Text*|
+|  | 3. Text für die Überschrift zu Beginn jeden Blockes (Blocknummer wird jeweils dynamisch dahinter gesetzt)|'Block'|
+|  | 4. Maximalwert für die Anzahl der Blöcke|10|
 | `repeat-end` | *keine* ||
 
 
 #### Beispiel
 ```
 rem::Schleife für alle Prüflinge
-repeat-start::examineecount::0::Wie viele Prüflinge gibt es?::Angaben zu Prüfling::20??Sie können Angaben zu maximal 20 Prüflingen eintragen. Sollten sich im Kurs mehr als 20 Prüflinge befinden, ist eine Auswahl vorzunehmen. Diese Auswahl sollte so erfolgen, dass ein möglichst breites Leistungsspektrum abgebildet wird. Vermieden werden sollte eine selektive Berücksichtigung bzw. Nichtberücksichtigung bestimmter Gruppen (z. B. besonders leistungsschwache oder leistungsstarke Prüflinge, Schülerinnen und Schüler mit nichtdeutscher Herkunftssprache).
-    input-number::task1::1::Teilaufgabe 1::::0::1
-    input-number::task2::1::Teilaufgabe 2::::0::1
-    input-number::task3::1::Teilaufgabe 3::::0::1
+repeat-start::examineecount::Wie viele Prüflinge gibt es?::Angaben zu Prüfling::20??Sie können Angaben zu maximal 20 Prüflingen eintragen. Sollten sich im Kurs mehr als 20 Prüflinge befinden, ist eine Auswahl vorzunehmen. Diese Auswahl sollte so erfolgen, dass ein möglichst breites Leistungsspektrum abgebildet wird. Vermieden werden sollte eine selektive Berücksichtigung bzw. Nichtberücksichtigung bestimmter Gruppen (z. B. besonders leistungsschwache oder leistungsstarke Prüflinge, Schülerinnen und Schüler mit nichtdeutscher Herkunftssprache).
+    input-number::task1::1::Teilaufgabe 1::::0::10
+    input-number::task2::1::Teilaufgabe 2::::0::10
+    input-number::task3::1::Teilaufgabe 3::::0::10
 repeat-end
 ```
 führt z. B. zu folgenden Daten

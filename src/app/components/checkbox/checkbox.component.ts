@@ -3,6 +3,7 @@ import {ElementComponent} from '../element.component';
 import {PropertyKey} from '../../classes/interfaces';
 import {FormControl, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
+import {UIElement} from '../../classes/UIElement';
 
 @Component({
   selector: 'app-checkbox',
@@ -29,27 +30,30 @@ export class CheckboxComponent extends ElementComponent implements OnInit, OnDes
   valueChangeSubscription: Subscription = null;
 
   ngOnInit(): void {
-    this.preText = this.elementData.getPropertyValue(PropertyKey.TEXT);
-    this.postText = this.elementData.getPropertyValue(PropertyKey.TEXT2);
-    if (this.elementData.required) {
-      this.checkboxControl.setValidators(Validators.requiredTrue);
-    }
-    if (this.value === 'true') {
-      this.checkboxControl.setValue(true);
-    }
-    this.parentForm.addControl(this.elementData.id, this.checkboxControl);
-    this.valueChangeSubscription = this.checkboxControl.valueChanges.subscribe(() => {
-      if (this.checkboxControl.valid && this.checkboxControl.value === true) {
-        this.value = 'true';
-      } else {
-        this.value = '';
+    if (this.elementData instanceof UIElement) {
+      this.preText = this.elementData.properties.get(PropertyKey.TEXT);
+      this.postText = this.elementData.properties.get(PropertyKey.TEXT2);
+      if (this.elementData.required) {
+        this.checkboxControl.setValidators(Validators.requiredTrue);
       }
-    });
+      if (this.value === 'true') {
+        this.checkboxControl.setValue(true);
+      }
+      this.parentForm.addControl(this.elementData.id, this.checkboxControl);
+      this.valueChangeSubscription = this.checkboxControl.valueChanges.subscribe(() => {
+        if (this.checkboxControl.valid && this.checkboxControl.value === true) {
+          this.value = 'true';
+        } else {
+          this.value = '';
+        }
+      });
+    }
   }
 
   ngOnDestroy() {
     if (this.valueChangeSubscription !== null) {
       this.valueChangeSubscription.unsubscribe();
+      this.parentForm.removeControl(this.elementData.id);
     }
   }
 }

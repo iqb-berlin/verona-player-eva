@@ -19,6 +19,9 @@ import {MatRadioModule} from '@angular/material/radio';
 import {MatSelectModule} from '@angular/material/select';
 import {MatCardModule} from '@angular/material/card';
 import {InputErrorPipe} from './components/input-error.pipe';
+import { RepeatComponent } from './components/repeat/repeat.component';
+import { SubFormComponent } from './components/sub-form/sub-form.component';
+import {MatExpansionModule} from '@angular/material/expansion';
 
 @NgModule({
   declarations: [
@@ -28,7 +31,9 @@ import {InputErrorPipe} from './components/input-error.pipe';
     InputComponent,
     CheckboxComponent,
     SelectComponent,
-    InputErrorPipe
+    InputErrorPipe,
+    RepeatComponent,
+    SubFormComponent
   ],
   imports: [
     BrowserModule,
@@ -43,7 +48,8 @@ import {InputErrorPipe} from './components/input-error.pipe';
     MatRadioModule,
     MatSelectModule,
     MatCardModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatExpansionModule
   ],
   providers: [],
   entryComponents: [
