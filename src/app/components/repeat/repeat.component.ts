@@ -14,8 +14,8 @@ import {debounceTime} from 'rxjs/operators';
         <p>{{prompt}}</p>
       </div>
       <div fxFlex="50">
-        <mat-form-field appearance="fill" fxFlexAlign="start" fxFlex="20" fxLayout="row">
-          <input matInput [formControl]="numberInputControl" autocomplete="off"/>
+        <mat-form-field>
+          <input type="number" matInput [formControl]="numberInputControl" autocomplete="off"/>
           <mat-error *ngIf="numberInputControl.errors">
             {{numberInputControl.errors | errorTransform}}
           </mat-error>

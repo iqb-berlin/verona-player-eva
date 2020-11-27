@@ -26,7 +26,7 @@ import {UIElement} from '../../classes/UIElement';
           </mat-error>
         </mat-form-field>
         <mat-form-field *ngIf="linesNumber <= 1 && elementDataAsUIElement.fieldType === fieldType.INPUT_NUMBER" appearance="fill" fxFlexAlign="start" fxFlex="50">
-          <input matInput [formControl]="numberInputControl" autocomplete="off"/>
+          <input type="number" matInput [formControl]="numberInputControl" autocomplete="off"/>
           <mat-error *ngIf="numberInputControl.errors">
             {{numberInputControl.errors | errorTransform}}
           </mat-error>
