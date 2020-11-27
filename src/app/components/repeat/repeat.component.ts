@@ -4,7 +4,6 @@ import {PropertyKey} from '../../classes/interfaces';
 import {FormControl, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
 import {RepeatBlock} from '../../classes/UIBlock';
-import {debounceTime} from 'rxjs/operators';
 
 @Component({
   selector: 'app-repeat',
@@ -13,13 +12,14 @@ import {debounceTime} from 'rxjs/operators';
       <div fxFlex="50" *ngIf="prompt">
         <p>{{prompt}}</p>
       </div>
-      <div fxFlex="50">
-        <mat-form-field>
-          <input type="number" matInput [formControl]="numberInputControl" autocomplete="off"/>
+      <div fxFlex="50" *ngIf="prompt" fxLayout="row" fxLayoutAlign="start center">
+        <mat-form-field fxFlex="30">
+          <input matInput type="number" [formControl]="numberInputControl" autocomplete="off"/>
           <mat-error *ngIf="numberInputControl.errors">
             {{numberInputControl.errors | errorTransform}}
           </mat-error>
         </mat-form-field>
+        <button type="button" mat-raised-button (click)="applyRepeatNumber()" matTooltip="Neue Anzahl anwenden" [disabled]="numberInputControl.invalid || value === newValue">Anwenden</button>
       </div>
     </div>
     <mat-accordion fxLayout="column" multi="false" *ngIf="elementDataAsRepeatBlock.elements.length > 0">
@@ -37,7 +37,7 @@ import {debounceTime} from 'rxjs/operators';
       </mat-expansion-panel>
     </mat-accordion>
   `,
-  styles: ['mat-panel-title {font-size: larger}']
+  styles: ['mat-panel-title {font-size: larger}', 'button {margin: 10px}']
 })
 
 export class RepeatComponent extends ElementComponent implements OnInit, OnDestroy {
@@ -45,6 +45,7 @@ export class RepeatComponent extends ElementComponent implements OnInit, OnDestr
   subTitle = '';
   numberInputControl = new FormControl();
   valueChangeSubscription: Subscription = null;
+  newValue = '';
 
   ngOnInit(): void {
     if (this.elementData instanceof RepeatBlock) {
@@ -61,18 +62,19 @@ export class RepeatComponent extends ElementComponent implements OnInit, OnDestr
       }
       this.numberInputControl.setValidators(myValidators);
       this.parentForm.addControl(this.elementData.id, this.numberInputControl);
-      this.valueChangeSubscription = this.numberInputControl.valueChanges.pipe(
-        debounceTime(500)).subscribe(() => {
+      this.valueChangeSubscription = this.numberInputControl.valueChanges.subscribe(() => {
+        this.numberInputControl.markAsTouched();
         if (this.numberInputControl.valid) {
-          this.value = this.numberInputControl.value;
-        } else {
-          this.value = '0';
-        }
-        const valueNumberTry = Number(this.value);
-        if (!isNaN(valueNumberTry)) {
-          (this.elementData as RepeatBlock).subBlockNumber = valueNumberTry;
+          this.newValue = this.numberInputControl.value;
         }
       });
+    }
+  }
+  applyRepeatNumber() {
+    const valueNumberTry = Number(this.newValue);
+    if (!isNaN(valueNumberTry)) {
+      this.value = this.newValue;
+      (this.elementData as RepeatBlock).subBlockNumber = valueNumberTry;
     }
   }
 
