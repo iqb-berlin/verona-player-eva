@@ -1,22 +1,24 @@
-import {Component, OnInit} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
-import {SourceInputDialogComponent} from './source-input-dialog/source-input-dialog.component';
-import {UIElement} from './classes/UIElement';
-import {FieldType, PropertyKey} from './classes/interfaces';
-import {FormGroup} from '@angular/forms';
-import {UIBlock} from './classes/UIBlock';
+import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { FormGroup } from '@angular/forms';
+import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
+import { UIElement } from './classes/UIElement';
+import { FieldType, PropertyKey } from './classes/interfaces';
+import { UIBlock } from './classes/UIBlock';
+import { DataService } from './data.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
   rootBlock = new UIBlock();
-  fieldType = FieldType;
   form = new FormGroup({});
 
-  constructor(public dialog: MatDialog) {}
+  constructor(
+    public dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     const myScript = `
@@ -42,18 +44,17 @@ input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::2::11
 input-text::task12a::1::Teilaufgabe 1.3a (Geo)::Balksisi aoisdfj oaisjioadm aosicj aoisjaoisjad oasijd
 input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
 `;
-    this.rootBlock = UIBlock.parseScript(myScript.split('\n'));
-    console.log(this.rootBlock);
+    this.rootBlock = DataService.parseScript(myScript.split('\n'));
   }
 
-  setNewScript() {
+  setNewScript(): void {
     const dialogRef = this.dialog.open(SourceInputDialogComponent, {
       height: '400px',
-      width: '600px',
+      width: '600px'
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.rootBlock = UIBlock.parseScript(result.split('\n'));
+        this.rootBlock = DataService.parseScript(result.split('\n'));
       } else {
         this.rootBlock = new UIBlock();
         this.rootBlock.elements.push(new UIElement('c1', FieldType.HEADER));
@@ -64,13 +65,14 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     });
   }
 
-  elementValueChanged() {
+  elementValueChanged(): void {
     this.logBlock(this.rootBlock, 0);
   }
+
   private logBlock(b: UIBlock, indent: number) {
     b.elements.forEach((e: UIBlock | UIElement) => {
       if (e instanceof UIElement) {
-        console.log(' '.repeat(indent) + e.id + ': ' + e.value);
+        console.log(`${' '.repeat(indent)}${e.id}: ${e.value}`);
       } else {
         this.logBlock(e, indent + 2);
       }

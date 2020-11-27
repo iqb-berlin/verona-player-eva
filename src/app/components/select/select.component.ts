@@ -1,9 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {PropertyKey} from '../../classes/interfaces';
-import {ElementComponent} from '../element.component';
-import {FormControl, Validators} from '@angular/forms';
-import {Subscription} from 'rxjs';
-import {UIElement} from '../../classes/UIElement';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { PropertyKey } from '../../classes/interfaces';
+import { ElementComponent } from '../element.component';
+import { UIElement } from '../../classes/UIElement';
 
 @Component({
   selector: 'app-select',
@@ -46,7 +46,6 @@ export class SelectComponent extends ElementComponent implements OnInit, OnDestr
 
   ngOnInit(): void {
     if (this.elementData instanceof UIElement) {
-
       this.label = this.elementData.properties.get(PropertyKey.TEXT);
       const optionsStr = this.elementData.properties.get(PropertyKey.TEXT2);
       if (optionsStr) {
@@ -69,7 +68,7 @@ export class SelectComponent extends ElementComponent implements OnInit, OnDestr
     }
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     if (this.valueChangeSubscription !== null) {
       this.valueChangeSubscription.unsubscribe();
       this.parentForm.removeControl(this.elementData.id);

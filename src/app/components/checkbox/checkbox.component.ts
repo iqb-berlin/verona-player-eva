@@ -1,9 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ElementComponent} from '../element.component';
-import {PropertyKey} from '../../classes/interfaces';
-import {FormControl, Validators} from '@angular/forms';
-import {Subscription} from 'rxjs';
-import {UIElement} from '../../classes/UIElement';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { ElementComponent } from '../element.component';
+import { PropertyKey } from '../../classes/interfaces';
+import { UIElement } from '../../classes/UIElement';
 
 @Component({
   selector: 'app-checkbox',
@@ -50,7 +50,7 @@ export class CheckboxComponent extends ElementComponent implements OnInit, OnDes
     }
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     if (this.valueChangeSubscription !== null) {
       this.valueChangeSubscription.unsubscribe();
       this.parentForm.removeControl(this.elementData.id);

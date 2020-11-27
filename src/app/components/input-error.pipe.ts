@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import {ValidationErrors} from '@angular/forms';
+import { ValidationErrors } from '@angular/forms';
 
-@Pipe({name: 'errorTransform'})
+@Pipe({ name: 'errorTransform' })
 export class InputErrorPipe implements PipeTransform {
   private errorMessages = {
     max: 'Wert zu groß',
@@ -15,14 +15,14 @@ export class InputErrorPipe implements PipeTransform {
   public transform(errors?: ValidationErrors, isCheckbox?: boolean): string {
     if (errors) {
       let returnMessage = '';
-      Object.keys(errors).forEach(errKey => {
+      Object.keys(errors).forEach((errKey) => {
         if (returnMessage) {
           returnMessage += '; ';
         } else {
           returnMessage += ': ';
         }
-        const msgKey = isCheckbox ? errKey + 'Checkbox' : errKey;
-        if (this.errorMessages.hasOwnProperty(msgKey)) {
+        const msgKey = isCheckbox ? `${errKey}Checkbox` : errKey;
+        if (this.errorMessages[msgKey]) {
           returnMessage += this.errorMessages[msgKey];
         } else {
           returnMessage += msgKey;
@@ -31,9 +31,8 @@ export class InputErrorPipe implements PipeTransform {
       if (!returnMessage) {
         returnMessage = '!';
       }
-      return 'Bitte korrigieren' + returnMessage;
-    } else {
-      return '';
+      return `Bitte korrigieren${returnMessage}`;
     }
+    return '';
   }
 }

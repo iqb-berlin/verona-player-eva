@@ -6,13 +6,20 @@ import {
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
+import { StaticProvider } from '@angular/core';
+import { environment } from './environments/environment';
 
 declare const require: any;
 
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting()
+  platformBrowserDynamicTesting([
+    {
+      provide: 'IS_PRODUCTION_MODE',
+      useValue: environment.production
+    }
+  ] as StaticProvider[])
 );
 // Then we find all the tests.
 const context = require.context('./', true, /\.spec\.ts$/);

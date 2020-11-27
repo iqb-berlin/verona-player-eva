@@ -1,4 +1,4 @@
-import {FieldType, PropertyKey} from './interfaces';
+import { FieldType, PropertyKey } from './interfaces';
 
 export class UIElement {
   id = '';
@@ -13,12 +13,12 @@ export class UIElement {
     this.fieldType = fieldType;
   }
 
-  static copyFrom(e: UIElement, idSuffix: string = ''): UIElement {
+  static copyFrom(e: UIElement, idSuffix = ''): UIElement {
     const myReturn = new UIElement(e.id + idSuffix, e.fieldType);
     myReturn.required = e.required;
-    for (const key of e.properties.keys()) {
-      myReturn.properties.set(key, e.properties.get(key));
-    }
+    e.properties.forEach((value, key) => {
+      myReturn.properties.set(key, value);
+    });
     myReturn.helpText = e.helpText;
     if (idSuffix.length === 0) {
       myReturn.value = e.value;
@@ -26,4 +26,3 @@ export class UIElement {
     return myReturn;
   }
 }
-

@@ -4,7 +4,7 @@ export enum PropertyKey {
   MAX_VALUE,
   MIN_VALUE,
   MAX_LENGTH,
-  LINES_NUMBER,
+  LINES_NUMBER
 }
 
 export enum FieldType {

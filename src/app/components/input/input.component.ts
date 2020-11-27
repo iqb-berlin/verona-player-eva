@@ -1,9 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ElementComponent} from '../element.component';
-import {FieldType, PropertyKey} from '../../classes/interfaces';
-import {FormControl, Validators} from '@angular/forms';
-import {Subscription} from 'rxjs';
-import {UIElement} from '../../classes/UIElement';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { ElementComponent } from '../element.component';
+import { FieldType, PropertyKey } from '../../classes/interfaces';
+import { UIElement } from '../../classes/UIElement';
 
 @Component({
   selector: 'app-input',
@@ -53,7 +53,7 @@ export class InputComponent extends ElementComponent implements OnInit, OnDestro
         const linesNumberStr = this.elementData.properties.get(PropertyKey.LINES_NUMBER);
         if (linesNumberStr) {
           const linesNumberTry = Number(linesNumberStr);
-          if (!isNaN(linesNumberTry)) {
+          if (!Number.isNaN(linesNumberTry)) {
             this.linesNumber = linesNumberTry;
           }
         }
@@ -61,7 +61,7 @@ export class InputComponent extends ElementComponent implements OnInit, OnDestro
         const maxLengthStr = this.elementData.properties.get(PropertyKey.MAX_LENGTH);
         if (maxLengthStr) {
           const maxLengthNumberTry = Number(maxLengthStr);
-          if (!isNaN(maxLengthNumberTry)) {
+          if (!Number.isNaN(maxLengthNumberTry)) {
             myValidators.push(Validators.maxLength(maxLengthNumberTry));
           }
         }
@@ -85,14 +85,14 @@ export class InputComponent extends ElementComponent implements OnInit, OnDestro
         const maxValueStr = this.elementData.properties.get(PropertyKey.MAX_VALUE);
         if (maxValueStr) {
           const maxValueNumberTry = Number(maxValueStr);
-          if (!isNaN(maxValueNumberTry)) {
+          if (!Number.isNaN(maxValueNumberTry)) {
             myValidators.push(Validators.max(maxValueNumberTry));
           }
         }
         const minValueStr = this.elementData.properties.get(PropertyKey.MIN_VALUE);
         if (minValueStr) {
           const minValueNumberTry = Number(minValueStr);
-          if (!isNaN(minValueNumberTry)) {
+          if (!Number.isNaN(minValueNumberTry)) {
             myValidators.push(Validators.min(minValueNumberTry));
           }
         }
@@ -112,7 +112,7 @@ export class InputComponent extends ElementComponent implements OnInit, OnDestro
     }
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     if (this.valueChangeSubscription !== null) {
       this.valueChangeSubscription.unsubscribe();
       this.parentForm.removeControl(this.elementData.id);

@@ -1,9 +1,9 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ElementComponent} from '../element.component';
-import {PropertyKey} from '../../classes/interfaces';
-import {FormControl, Validators} from '@angular/forms';
-import {Subscription} from 'rxjs';
-import {RepeatBlock} from '../../classes/UIBlock';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { ElementComponent } from '../element.component';
+import { PropertyKey } from '../../classes/interfaces';
+import { RepeatBlock } from '../../classes/UIBlock';
 
 @Component({
   selector: 'app-repeat',
@@ -56,7 +56,7 @@ export class RepeatComponent extends ElementComponent implements OnInit, OnDestr
       const maxValueStr = this.elementData.properties.get(PropertyKey.MAX_VALUE);
       if (maxValueStr) {
         const maxValueNumberTry = Number(maxValueStr);
-        if (!isNaN(maxValueNumberTry)) {
+        if (!Number.isNaN(maxValueNumberTry)) {
           myValidators.push(Validators.max(maxValueNumberTry));
         }
       }
@@ -70,15 +70,16 @@ export class RepeatComponent extends ElementComponent implements OnInit, OnDestr
       });
     }
   }
-  applyRepeatNumber() {
+
+  applyRepeatNumber(): void {
     const valueNumberTry = Number(this.newValue);
-    if (!isNaN(valueNumberTry)) {
+    if (!Number.isNaN(valueNumberTry)) {
       this.value = this.newValue;
       (this.elementData as RepeatBlock).subBlockNumber = valueNumberTry;
     }
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     if (this.valueChangeSubscription !== null) {
       this.valueChangeSubscription.unsubscribe();
       this.parentForm.removeControl(this.elementData.id);

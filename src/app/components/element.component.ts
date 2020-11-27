@@ -1,8 +1,10 @@
-import { Directive, Input, EventEmitter, Output} from '@angular/core';
-import {UIElement} from '../classes/UIElement';
-import {FormGroup} from '@angular/forms';
-import {RepeatBlock} from '../classes/UIBlock';
-import {FieldType} from '../classes/interfaces';
+import {
+  Directive, Input, EventEmitter, Output
+} from '@angular/core';
+import { FormGroup } from '@angular/forms';
+import { UIElement } from '../classes/UIElement';
+import { RepeatBlock } from '../classes/UIBlock';
+import { FieldType } from '../classes/interfaces';
 
 @Directive()
 // tslint:disable-next-line:directive-class-suffix
@@ -20,33 +22,32 @@ export abstract class ElementComponent {
       this.valueChange.emit(value);
     }
   }
+
   get value(): string {
     if (this.elementData) {
       return this.elementData.value;
-    } else {
-      return '';
     }
+    return '';
   }
 
   get elementDataAsUIElement(): UIElement {
     if (this.elementIsUIElement) {
       return this.elementData as UIElement;
-    } else {
-      return null;
     }
+    return null;
   }
 
   get elementDataAsRepeatBlock(): RepeatBlock {
     if (this.elementIsRepeatBlock) {
       return this.elementData as RepeatBlock;
-    } else {
-      return null;
     }
+    return null;
   }
 
   elementIsUIElement(): boolean {
     return this.elementData && this.elementData instanceof UIElement;
   }
+
   elementIsRepeatBlock(): boolean {
     return this.elementData && this.elementData instanceof RepeatBlock;
   }

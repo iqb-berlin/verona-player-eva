@@ -1,8 +1,8 @@
-import {Component, OnInit} from '@angular/core';
-import {ElementComponent} from '../element.component';
-import {FieldType, PropertyKey} from '../../classes/interfaces';
-import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
-import {UIElement} from '../../classes/UIElement';
+import { Component, OnInit } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ElementComponent } from '../element.component';
+import { FieldType, PropertyKey } from '../../classes/interfaces';
+import { UIElement } from '../../classes/UIElement';
 
 @Component({
   selector: 'app-text',
@@ -34,7 +34,9 @@ export class TextComponent extends ElementComponent implements OnInit {
   ngOnInit(): void {
     if (this.elementData && this.elementData instanceof UIElement) {
       if (this.elementData.fieldType === FieldType.HTML) {
-        this.content = this.sanitizer.bypassSecurityTrustHtml(this.elementData.properties.get(PropertyKey.TEXT));
+        this.content = this.sanitizer.bypassSecurityTrustHtml(
+          this.elementData.properties.get(PropertyKey.TEXT)
+        );
         // todo how to keep urls?
       } else {
         this.content = this.elementData.properties.get(PropertyKey.TEXT);
