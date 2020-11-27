@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { FormGroup } from '@angular/forms';
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
@@ -17,7 +17,8 @@ export class AppComponent implements OnInit {
   form = new FormGroup({});
 
   constructor(
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    @Inject('IS_PRODUCTION_MODE') readonly isProductionMode: boolean
   ) {}
 
   ngOnInit(): void {

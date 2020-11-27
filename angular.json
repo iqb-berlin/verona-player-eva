@@ -60,6 +60,14 @@
                   "maximumWarning": "6kb"
                 }
               ]
+            },
+            "serve": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.ts"
+                }
+              ]
             }
           }
         },
@@ -71,6 +79,9 @@
           "configurations": {
             "production": {
               "browserTarget": "verona-player-eva:build:production"
+            },
+            "serve": {
+              "browserTarget": "verona-player-eva:build:serve"
             }
           }
         },

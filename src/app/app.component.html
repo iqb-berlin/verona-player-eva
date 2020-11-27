@@ -5,9 +5,8 @@
         <app-sub-form [elementData]="e" (elementDataChange)="elementValueChanged()" [parentForm]="form"></app-sub-form>
       </div>
     </form>
-
   </mat-card-content>
-  <mat-card-actions>
+  <mat-card-actions *ngIf="!isProductionMode">
     <button mat-raised-button (click)="setNewScript()" matTooltip="Script eingeben">Script Laden</button>
     <button mat-raised-button (click)="form.markAllAsTouched()" matTooltip="zeige alle Probleme">Validiere</button>
   </mat-card-actions>
