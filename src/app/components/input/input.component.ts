@@ -71,6 +71,9 @@ export class InputComponent extends ElementComponent implements OnInit, OnDestro
         if (myValidators.length > 0) {
           this.textInputControl.setValidators(myValidators);
         }
+        if (this.value) {
+          this.textInputControl.setValue(this.value);
+        }
         this.parentForm.addControl(this.elementData.id, this.textInputControl);
         this.valueChangeSubscription = this.textInputControl.valueChanges.subscribe(() => {
           if (this.textInputControl.valid) {
@@ -98,6 +101,9 @@ export class InputComponent extends ElementComponent implements OnInit, OnDestro
         }
         if (this.elementData.required) {
           myValidators.push(Validators.required);
+        }
+        if (this.value) {
+          this.numberInputControl.setValue(this.value);
         }
         this.numberInputControl.setValidators(myValidators);
         this.parentForm.addControl(this.elementData.id, this.numberInputControl);

@@ -2,9 +2,6 @@ import {Component, Inject, OnInit} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { FormGroup } from '@angular/forms';
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
-import { UIElement } from './classes/UIElement';
-import { FieldType, PropertyKey } from './classes/interfaces';
-import {RepeatBlock, UIBlock} from './classes/UIBlock';
 import { DataService } from './data.service';
 
 @Component({
@@ -13,39 +10,11 @@ import { DataService } from './data.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  rootBlock = new UIBlock();
   form = new FormGroup({});
-
-  constructor(
-    public dialog: MatDialog,
-    @Inject('IS_PRODUCTION_MODE') readonly isProductionMode: boolean
-  ) {}
-
-  ngOnInit(): void {
-    const playerMetadata = DataService.getPlayerMetadata();
-    console.log('playerMetadata', playerMetadata);
-    if (this.isProductionMode) {
-      window.addEventListener('message', (event: MessageEvent) => {
-        if ('data' in event) {
-          if ('type' in event.data) {
-            if (event.data.type === 'vopStartCommand') {
-              if (event.data.unitDefinition) {
-                console.log('player: got event.data.unitDefinition');
-                this.rootBlock = DataService.parseScript(event.data.unitDefinition.split('\n'));
-                if (this.rootBlock) {
-                  console.log(`got ${this.rootBlock.elements.length}`);
-                }
-              }
-            }
-          }
-        }
-      });
-      window.parent.postMessage({
-        type: 'vopReadyNotification',
-        apiVersion: playerMetadata.get('version')
-      }, '*');
-    } else {
-      const myScript = `
+  playerMetadata = new Map<string, string>();
+  sessionId = '';
+  storedResponses = '{}';
+  myScript = `iqb-scripted::1.0
 html::And now <strong>this text here is bolded</strong>
 html::And hyperlinks such as <a href=”https://www.iqb.hu-berlin.de”>this one to the IQB website</a>
 header::Abschnitt 223
@@ -68,8 +37,81 @@ input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::2::11
 input-text::task12a::1::Teilaufgabe 1.3a (Geo)::Balksisi aoisdfj oaisjioadm aosicj aoisjaoisjad oasijd
 input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
 `;
-      this.rootBlock = DataService.parseScript(myScript.split('\n'));
+
+  constructor(
+    public dialog: MatDialog,
+    @Inject('IS_PRODUCTION_MODE') readonly isProductionMode: boolean,
+    public ds: DataService
+  ) {}
+
+  ngOnInit(): void {
+    this.playerMetadata = DataService.getPlayerMetadata();
+    console.log('playerMetadata', this.playerMetadata);
+    if (this.isProductionMode) {
+      window.addEventListener('message', (event: MessageEvent) => {
+        if ('data' in event) {
+          if ('type' in event.data) {
+            switch (event.data.type) {
+              case 'vopStartCommand':
+                if (event.data.sessionId) {
+                  this.sessionId = event.data.sessionId;
+                  if (event.data.unitDefinition) {
+                    let storedResponses = {};
+                    if (event.data.unitState && event.data.unitState.dataParts) {
+                      console.log('event.data.unitState.dataParts', event.data.unitState.dataParts);
+                      const storedResponsesRaw = event.data.unitState.dataParts;
+                      if (storedResponsesRaw && storedResponsesRaw.allResponses) {
+                        storedResponses = JSON.parse(storedResponsesRaw.allResponses);
+                      }
+                    }
+                    this.ds.rootBlock = DataService.parseScript(event.data.unitDefinition.split('\n'), storedResponses);
+                  } else {
+                    console.error('player: (vopStartCommand) no unitDefinition is given');
+                  }
+                } else {
+                  console.error('player: (vopStartCommand) no sessionId is given');
+                }
+                break;
+              case 'vopPageNavigationCommand':
+              case 'vopGetStateRequest':
+              case 'vopStopCommand':
+              case 'vopContinueCommand':
+                console.warn(`player: message of type ${event.data.type} not processed yet`);
+                break;
+              default:
+                console.warn(`player: got message of unknown type ${event.data.type}`);
+            }
+          }
+        }
+      });
+      window.addEventListener('blur', () => {
+        window.parent.postMessage({
+          type: 'vopWindowFocusChangedNotification',
+          sessionId: this.sessionId,
+          hasFocus: document.hasFocus()
+        }, '*');
+      });
+      window.addEventListener('focus', () => {
+        window.parent.postMessage({
+          type: 'vopWindowFocusChangedNotification',
+          sessionId: this.sessionId,
+          hasFocus: document.hasFocus()
+        }, '*');
+      });
+      window.parent.postMessage({
+        type: 'vopReadyNotification',
+        apiVersion: this.playerMetadata.get('version'),
+        notSupportedApiFeatures: this.playerMetadata.get('not-supported-api-features'),
+        supportedUnitDefinitionTypes: this.playerMetadata.get('supported-unit-definition-types'),
+        supportedUnitStateDataTypes: this.playerMetadata.get('supported-unit-state-data-types')
+      }, '*');
+    } else {
+      this.setScript();
     }
+  }
+
+  setScript(): void {
+    this.ds.rootBlock = DataService.parseScript(this.myScript.split('\n'), JSON.parse(this.storedResponses));
   }
 
   setNewScript(): void {
@@ -79,35 +121,38 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.rootBlock = DataService.parseScript(result.split('\n'));
-      } else {
-        this.rootBlock = new UIBlock();
-        this.rootBlock.elements.push(new UIElement('c1', FieldType.HEADER));
-        const ed = new UIElement('cancelled', FieldType.SCRIPT_ERROR);
-        ed.properties.set(PropertyKey.TEXT, 'Abgebrochen');
-        this.rootBlock.elements.push(ed);
+        this.storedResponses = '{}';
+        this.myScript = result;
+        this.setScript();
       }
     });
   }
 
   elementValueChanged(): void {
-    if (!this.isProductionMode) {
-      this.logBlock(this.rootBlock, 0);
+    if (this.isProductionMode) {
+      window.parent.postMessage({
+        type: 'vopStateChangedNotification',
+        sessionId: this.sessionId,
+        timeStamp: Date.now(),
+        unitState: {
+          dataParts: {
+            allResponses: JSON.stringify(this.ds.getValues())
+          },
+          unitStateType: this.playerMetadata.get('supported-unit-state-data-types')
+        }
+      }, '*');
+    } else {
+      console.log(this.ds.getValues());
+      // ;
     }
   }
 
-  private logBlock(b: UIBlock, indent: number) {
-    b.elements.forEach((elementOrBlock: UIBlock | UIElement) => {
-      if (elementOrBlock instanceof UIElement) {
-        if (elementOrBlock.value) {
-          console.log(`${' '.repeat(indent)}${elementOrBlock.id}: ${elementOrBlock.value}`);
-        }
-      } else if (elementOrBlock instanceof RepeatBlock) {
-        if (elementOrBlock.value) {
-          console.log(`${' '.repeat(indent)}${elementOrBlock.id}: ${elementOrBlock.value}`);
-        }
-        this.logBlock(elementOrBlock, indent + 2);
-      }
-    });
+  responsesSave() {
+    this.storedResponses = JSON.stringify(this.ds.getValues());
+  }
+
+  responsesRestore() {
+    this.setScript();
+    console.log(this.ds.getValues());
   }
 }

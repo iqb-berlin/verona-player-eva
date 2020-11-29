@@ -61,6 +61,9 @@ export class RepeatComponent extends ElementComponent implements OnInit, OnDestr
         }
       }
       this.numberInputControl.setValidators(myValidators);
+      if (this.value) {
+        this.numberInputControl.setValue(this.value);
+      }
       this.parentForm.addControl(this.elementData.id, this.numberInputControl);
       this.valueChangeSubscription = this.numberInputControl.valueChanges.subscribe(() => {
         this.numberInputControl.markAsTouched();
@@ -75,7 +78,7 @@ export class RepeatComponent extends ElementComponent implements OnInit, OnDestr
     const valueNumberTry = Number(this.newValue);
     if (!Number.isNaN(valueNumberTry)) {
       this.value = this.newValue;
-      (this.elementData as RepeatBlock).subBlockNumber = valueNumberTry;
+      (this.elementData as RepeatBlock).setSubBlockNumber(valueNumberTry);
     }
   }
 

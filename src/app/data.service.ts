@@ -7,6 +7,8 @@ import { RepeatBlock, UIBlock } from './classes/UIBlock';
   providedIn: 'root'
 })
 export class DataService {
+  rootBlock = new UIBlock();
+
   private static getParameter(line: string, pos: number): string {
     const lineSplits = line.split('??');
     const lineSplits2 = lineSplits[0].split('::');
@@ -128,22 +130,31 @@ export class DataService {
     return ed;
   }
 
-  static parseScript(scriptLines: string[], idSuffix = '', lineNumberOffset = 0): UIBlock {
+  static parseScript(scriptLines: string[], oldResponses: object, idSuffix = '', lineNumberOffset = 0): UIBlock {
     const elementKeys = ['text', 'header', 'title', 'hr', 'html', 'input-text', 'input-number', 'checkbox', 'multiple-choice', 'drop-down'];
     const myReturn = new UIBlock();
     let localLineNumber = 0;
     let localIdCounter = 1;
     while (localLineNumber < scriptLines.length) {
-      const line = scriptLines[localLineNumber];
+      let line = scriptLines[localLineNumber];
       localLineNumber += 1;
+      if (line) {
+        const notEmptyCheck = /\S+/g.exec(line);
+        if (!notEmptyCheck) {
+          line = '';
+        }
+      }
       if (line) {
         const keywordList = line.match(/[a-z-]+/);
         if (keywordList && keywordList.length > 0) {
           const keyword = keywordList[0];
           if (elementKeys.includes(keyword)) {
-            myReturn.elements.push(this.readUIElement(
-              keyword, line, `${idSuffix}_${localIdCounter.toString()}`, lineNumberOffset + localLineNumber + 1
-            ));
+            const newElement = this.readUIElement(
+              keyword, line, `${idSuffix}_${localIdCounter.toString()}`, lineNumberOffset + localLineNumber + 1);
+            if (oldResponses[newElement.id]) {
+              newElement.value = oldResponses[newElement.id];
+            }
+            myReturn.elements.push(newElement);
             localIdCounter += 1;
           } else if (keyword === 'repeat-start') {
             const parameter1 = this.getParameter(line, 1);
@@ -167,16 +178,29 @@ export class DataService {
               }
             }
             if (blockLines.length > 0) {
-              const tmpBlock = this.parseScript(blockLines, `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
+              const tmpBlock = this.parseScript(blockLines, {},
+                `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
               localIdCounter += 1;
               b.templateElements = tmpBlock.elements;
+              if (oldResponses[b.id]) {
+                const valueNumberTry = Number(oldResponses[b.id]);
+                if (!Number.isNaN(valueNumberTry)) {
+                  b.value = oldResponses[b.id];
+                  b.setSubBlockNumber(valueNumberTry, oldResponses);
+                }
+              }
               myReturn.elements.push(b);
             }
+          } else {
+            const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
+            localIdCounter += 1;
+            ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
+            myReturn.elements.push(ed);
           }
         } else {
           const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
           localIdCounter += 1;
-          ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber + 1).toString()}: Schlüssel nicht erkannt`);
+          ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
           myReturn.elements.push(ed);
         }
       } else { // empty line in form
@@ -200,4 +224,29 @@ export class DataService {
     }
     return myReturn;
   }
+
+  private static getBlockValues(b: UIBlock): object {
+    const myReturn = {};
+    b.elements.forEach((elementOrBlock: UIBlock | UIElement) => {
+      if (elementOrBlock instanceof UIElement) {
+        if (elementOrBlock.value) {
+          myReturn[elementOrBlock.id] = elementOrBlock.value;
+        }
+      } else if (elementOrBlock instanceof UIBlock) {
+        if (elementOrBlock instanceof RepeatBlock && elementOrBlock.value) {
+          myReturn[elementOrBlock.id] = elementOrBlock.value;
+        }
+        const subBlockValues = this.getBlockValues(elementOrBlock);
+        Object.keys(subBlockValues).forEach(key => {
+          myReturn[key] = subBlockValues[key];
+        });
+      }
+    });
+    return myReturn;
+  }
+
+  getValues(): object {
+    return DataService.getBlockValues(this.rootBlock);
+  }
+
 }

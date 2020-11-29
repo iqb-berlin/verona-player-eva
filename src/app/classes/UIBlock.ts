@@ -34,7 +34,7 @@ export class RepeatBlock extends UIBlock {
     this.id = id;
   }
 
-  set subBlockNumber(n: number) {
+  setSubBlockNumber(n: number, oldResponses = {}): void {
     const newBlocks: (UIElement | UIBlock)[] = [];
     const oldSubBlockNumber = this.elements.length;
     for (let i = 0; i < n; i++) {
@@ -42,11 +42,16 @@ export class RepeatBlock extends UIBlock {
         newBlocks.push(this.elements[i]);
       } else {
         const newBlock = new UIBlock();
-        this.templateElements.forEach((e) => {
-          if (e instanceof UIElement) {
-            newBlock.elements.push(UIElement.copyFrom(e, `_${(i + 1).toString()}`));
+        this.templateElements.forEach((templateElement) => {
+          if (templateElement instanceof UIElement) {
+            const newElement = UIElement.copyFrom(templateElement, `_${(i + 1).toString()}`);
+            if (oldResponses[newElement.id]) {
+              newElement.value = oldResponses[newElement.id];
+            }
+            newBlock.elements.push(newElement);
           } else {
-            newBlock.elements.push(UIBlock.copyFrom(e));
+            // newBlock.elements.push(UIBlock.copyFrom(templateElement));
+            // todo new block with ids and old responses!
           }
         });
         newBlocks.push(newBlock);
