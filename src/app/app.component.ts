@@ -4,7 +4,7 @@ import { FormGroup } from '@angular/forms';
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
 import { UIElement } from './classes/UIElement';
 import { FieldType, PropertyKey } from './classes/interfaces';
-import { UIBlock } from './classes/UIBlock';
+import {RepeatBlock, UIBlock} from './classes/UIBlock';
 import { DataService } from './data.service';
 
 @Component({
@@ -22,7 +22,30 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const myScript = `
+    const playerMetadata = DataService.getPlayerMetadata();
+    console.log('playerMetadata', playerMetadata);
+    if (this.isProductionMode) {
+      window.addEventListener('message', (event: MessageEvent) => {
+        if ('data' in event) {
+          if ('type' in event.data) {
+            if (event.data.type === 'vopStartCommand') {
+              if (event.data.unitDefinition) {
+                console.log('player: got event.data.unitDefinition');
+                this.rootBlock = DataService.parseScript(event.data.unitDefinition.split('\n'));
+                if (this.rootBlock) {
+                  console.log(`got ${this.rootBlock.elements.length}`);
+                }
+              }
+            }
+          }
+        }
+      });
+      window.parent.postMessage({
+        type: 'vopReadyNotification',
+        apiVersion: playerMetadata.get('version')
+      }, '*');
+    } else {
+      const myScript = `
 html::And now <strong>this text here is bolded</strong>
 html::And hyperlinks such as <a href=”https://www.iqb.hu-berlin.de”>this one to the IQB website</a>
 header::Abschnitt 223
@@ -45,7 +68,8 @@ input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::2::11
 input-text::task12a::1::Teilaufgabe 1.3a (Geo)::Balksisi aoisdfj oaisjioadm aosicj aoisjaoisjad oasijd
 input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
 `;
-    this.rootBlock = DataService.parseScript(myScript.split('\n'));
+      this.rootBlock = DataService.parseScript(myScript.split('\n'));
+    }
   }
 
   setNewScript(): void {
@@ -67,15 +91,22 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
   }
 
   elementValueChanged(): void {
-    this.logBlock(this.rootBlock, 0);
+    if (!this.isProductionMode) {
+      this.logBlock(this.rootBlock, 0);
+    }
   }
 
   private logBlock(b: UIBlock, indent: number) {
-    b.elements.forEach((e: UIBlock | UIElement) => {
-      if (e instanceof UIElement) {
-        console.log(`${' '.repeat(indent)}${e.id}: ${e.value}`);
-      } else {
-        this.logBlock(e, indent + 2);
+    b.elements.forEach((elementOrBlock: UIBlock | UIElement) => {
+      if (elementOrBlock instanceof UIElement) {
+        if (elementOrBlock.value) {
+          console.log(`${' '.repeat(indent)}${elementOrBlock.id}: ${elementOrBlock.value}`);
+        }
+      } else if (elementOrBlock instanceof RepeatBlock) {
+        if (elementOrBlock.value) {
+          console.log(`${' '.repeat(indent)}${elementOrBlock.id}: ${elementOrBlock.value}`);
+        }
+        this.logBlock(elementOrBlock, indent + 2);
       }
     });
   }

@@ -2,15 +2,17 @@
 // possible improvements:
 // - ignore comments when matching regex
 
-const fs = require('fs')
+const fs = require('fs');
 const existsSync = fs.existsSync;
 const readFileSync = fs.readFileSync;
 const writeFileSync = fs.writeFileSync;
 
-const folderseperator = '/';
 const debug = true;
 
-let folder = process.argv[2];
+const applicationFolder = `${__dirname}/../../`;
+const packageJsonData = JSON.parse(fs.readFileSync(`${applicationFolder}package.json`).toString());
+const sourceFolder = `${applicationFolder}dist/${packageJsonData.name}/`;
+const targetFileName = `${applicationFolder}dist/${packageJsonData.name}@${packageJsonData.version}.html`;
 
 function logDebug(str) {
   if (debug) {
@@ -39,7 +41,7 @@ function replaceUrlInCss(jsString) {
     const regexFile = /\((.*?)\)/ig;
     const src = regexFile.exec(a)[1].replace(/\'/gi, '').replace(/\"/gi, '').replace('./', '');
     const ext = getExtension(src);
-    const file = folder + src;
+    const file = sourceFolder + src;
     if (existsSync(file)) {
       const base64Str = base64Encode(file);
       return `url(data:image/${ext};base64,${base64Str})`; // ATTENTION with " & '
@@ -62,9 +64,9 @@ function replaceLinkedAssetsInJS(jsString) {
     const ext = getExtension(b);
 
     try {
-      const file = folder + src;
+      const file = sourceFolder + src;
       if (existsSync(file)) {
-        const base64Str = base64Encode(folder + src);
+        const base64Str = base64Encode(sourceFolder + src);
         if (firstSign === '"') {
           return '"data:image/' + ext + ';base64,' + base64Str + '"'; // ATTENTION with " & '
         }
@@ -82,7 +84,7 @@ function replaceLinkedAssetsInJS(jsString) {
 function replaceFavicon(htmlString) {
   const regexCss = /<link.*href="(.*?.ico)".*?>/gi;
   return htmlString.replace(regexCss, (a, b) => {
-    const file = folder + b;
+    const file = sourceFolder + b;
     logDebug(`Replacing favicon: ${file}`);
     const base64Str = base64Encode(file);
     return `<link type="image/x-icon" href="data:image/x-icon;base64,${base64Str}" />`;
@@ -93,7 +95,7 @@ function replaceFavicon(htmlString) {
 function replaceCSSLinks(htmlString) {
   const regexCss = /<link.*href="(.*?.css)".*?>/gi;
   return htmlString.replace(regexCss, (a, b) => {
-    let cssString = readFileSync(folder + b, 'utf8').toString();
+    let cssString = readFileSync(sourceFolder + b, 'utf8').toString();
     logDebug(`Replacing CSS: ${a}`);
     cssString = replaceUrlInCss(cssString);
     return `<style>${cssString}</style>`;
@@ -109,30 +111,25 @@ function replaceScriptTags(htmlString) {
     console.log('Replacing Script Tag: ', a);
     const regexSRC = /src="(.*?)"/ig; // Attention, global declaration is wrong, because of pointer
     const filename = regexSRC.exec(a)[1];
-    let fileContent = readFileSync(folder + filename, 'utf8').toString();
+    let fileContent = readFileSync(sourceFolder + filename, 'utf8').toString();
     fileContent = replaceUrlInCss(fileContent); // first because works with url-pattern
     fileContent = replaceLinkedAssetsInJS(fileContent);
     return "<script type='text/javascript'>" + fileContent + "\n" + "</script>";
   });
 }
 
-// /** Replace the base tag <base href="/"> with a dynmaic value based on the
-// location of the document */
+// /** Replace the base tag <base href="/"> with an error value */
 function replaceBaseHREF(htmlString) {
   const regexJS = /<base href="\/">/gim;
   return htmlString.replace(regexJS, (a, b) => {
     console.log('Replacing Base Href: ', a);
-    return "<script>document.write('<base href=\"' + document.location + '\" />');</script>";
+    return "<script>document.write('<base href=\"access_to_location_not_allowed\" />');</script>";
   });
 }
 
-if (!folder.endsWith(folderseperator)) {
-  folder += folderseperator;
-}
+console.log(`run iqb-distpacker in ${sourceFolder}`);
 
-console.log(`run iqb-distpacker in ${folder}`);
-
-let htmlString = readFileSync(`${folder}index.html`, 'utf8').toString();
+let htmlString = readFileSync(`${sourceFolder}index.html`, 'utf8').toString();
 
 htmlString = replaceFavicon(htmlString);
 htmlString = replaceCSSLinks(htmlString);
@@ -141,5 +138,5 @@ htmlString = replaceScriptTags(htmlString);
 htmlString = replaceBaseHREF(htmlString);
 
 // write new index.html
-writeFileSync(`${folder}index_packed2.html`, htmlString, 'utf8');
-console.log(`finished, wrote packed index_packed2.html to:${folder}`);
+writeFileSync(targetFileName, htmlString, 'utf8');
+console.log(`finished, wrote packed version to "${targetFileName}"`);

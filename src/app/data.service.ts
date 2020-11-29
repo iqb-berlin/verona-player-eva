@@ -78,10 +78,8 @@ export class DataService {
             ed = new UIElement(parameter1, FieldType.CHECKBOX);
           } else if (keyword === 'multiple-choice') {
             ed = new UIElement(parameter1, FieldType.MULTIPLE_CHOICE);
-            ed.value = '2';
           } else if (keyword === 'drop-down') {
             ed = new UIElement(parameter1, FieldType.DROP_DOWN);
-            ed.value = '1';
           }
           if (parameter2) {
             (ed as UIElement).required = parameter2 === '1';
@@ -184,6 +182,20 @@ export class DataService {
       } else { // empty line in form
         myReturn.elements.push(new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.TEXT));
         localIdCounter += 1;
+      }
+    }
+    return myReturn;
+  }
+
+  static getPlayerMetadata(): Map<string, string> {
+    const myReturn: Map<string, string> = new Map();
+    const metaAttributes = document.querySelector('meta[name="application-name"]').attributes;
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < metaAttributes.length; i++) {
+      if (metaAttributes[i].localName === 'content') {
+        myReturn.set('name', metaAttributes[i].value);
+      } else if (metaAttributes[i].localName.substr(0, 5) === 'data-') {
+        myReturn.set(metaAttributes[i].localName.substr(5), metaAttributes[i].value);
       }
     }
     return myReturn;

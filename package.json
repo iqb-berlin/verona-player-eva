@@ -8,9 +8,11 @@
   },
   "scripts": {
     "ng": "ng",
+    "prestart": "node src/scripts/updateIndexHtmlMeta",
     "start": "ng serve",
+    "prebuild": "node src/scripts/updateIndexHtmlMeta",
     "build": "ng build --prod",
-    "postbuild": "node src/scripts/distpacker dist/verona-player-eva",
+    "postbuild": "node src/scripts/distpacker",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

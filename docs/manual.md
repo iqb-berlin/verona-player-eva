@@ -4,6 +4,7 @@ enthält die Definition eines Eingabeelementes, eines Textes oder eines
 Elementes zur Strukturierung. Jede Zeile enthält als erstes ein Schlüsselwort 
 und kann dahinter weitere Parameter enthalten, jeweils getrennt mit `::`.
 
+* Die erste Zeile MUSS lauten `iqb-scripted::1.0`.
 * Am Ende einer Definitionszeile kann nach `??` noch weiterer Text angefügt werden, 
 der als Hilfe-/Hinweistext verwendet wird (Abruf über gesonderten Schalter).
 * Eine leere Zeile erzeugt einen Abstand im Formular in der Höhe eines 
