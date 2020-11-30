@@ -1,27 +1,20 @@
-# VeronaPlayerAbi2
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/iqb-berlin/verona-player-eva?style=flat-square)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.3.
+# IQB Verona Player Eva 
+Verona interfaces are specifications concerning computer based assessment. You can learn 
+more about this German initiative [here](https://github.com/verona-interfaces/introduction).
 
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+IQB`s verona-player-eva is a software component which runs unit definitions inside verona 
+compliant web applications. The main target for this player are surveys. Unit 
+definitions are written as simple text scripts. You can find the specifications of the unit definitions
+for this player [here](https://github.com/iqb-berlin/verona-data-specifications/blob/main/unit-defs/manual_iqb-scripted.md).
+The responses this player emits are specified [here](https://github.com/iqb-berlin/verona-data-specifications/blob/main/responses/manual_iqb-key-value.md).
+ 
+## Using the Player
+* You need a Verona host system to run this software, for example the 
+[IQB-Testcenter](https://github.com/iqb-berlin/testcenter-setup) or the 
+[Verona-Player-Testbed](https://github.com/iqb-berlin/verona-player-testbed).
+* This angular application builds to one single html file. See the 
+[release section](https://github.com/iqb-berlin/verona-player-eva/releases) of
+this repository to get a ready-to-use player.  
