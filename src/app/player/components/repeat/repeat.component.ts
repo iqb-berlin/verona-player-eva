@@ -6,7 +6,7 @@ import { PropertyKey } from '../../classes/interfaces';
 import { RepeatBlock } from '../../classes/UIBlock';
 
 @Component({
-  selector: 'app-repeat',
+  selector: 'player-repeat',
   template: `
     <div fxLayout="row" fxLayoutAlign="space-between center" fxFill>
       <div fxFlex="50" *ngIf="prompt">
@@ -31,7 +31,7 @@ import { RepeatBlock } from '../../classes/UIBlock';
         </mat-expansion-panel-header>
         <ng-template matExpansionPanelContent>
           <div *ngFor="let e of elementList.elements">
-            <app-sub-form [elementData]="e" (elementDataChange)="elementDataChange.emit(elementData)" [parentForm]="parentForm"></app-sub-form>
+            <player-sub-form [elementData]="e" (elementDataChange)="elementDataChange.emit(elementData)" [parentForm]="parentForm"></player-sub-form>
           </div>
         </ng-template>
       </mat-expansion-panel>

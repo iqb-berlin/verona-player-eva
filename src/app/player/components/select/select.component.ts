@@ -6,7 +6,7 @@ import { ElementComponent } from '../element.component';
 import { UIElement } from '../../classes/UIElement';
 
 @Component({
-  selector: 'app-select',
+  selector: 'player-select',
   styles: [
     '.r-group {display: flex; flex-direction: column; margin: 15px 0;}',
     '.r-option {margin: 5px;}'],

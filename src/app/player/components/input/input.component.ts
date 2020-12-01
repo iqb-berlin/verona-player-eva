@@ -6,7 +6,7 @@ import { FieldType, PropertyKey } from '../../classes/interfaces';
 import { UIElement } from '../../classes/UIElement';
 
 @Component({
-  selector: 'app-input',
+  selector: 'player-input',
   template: `
     <div fxLayout="row" fxLayoutAlign="space-between center" fxFill>
       <div fxFlex="50" *ngIf="preText">

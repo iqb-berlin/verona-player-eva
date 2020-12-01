@@ -12,7 +12,7 @@ export abstract class ElementComponent {
   @Input() elementData: UIElement | RepeatBlock;
   @Input() parentForm: FormGroup;
   @Output() elementDataChange = new EventEmitter<UIElement | RepeatBlock>();
-  @Output() valueChange = new EventEmitter<string>();
+  @Output() valueChange = new EventEmitter();
   fieldType = FieldType;
 
   set value(value: string) {

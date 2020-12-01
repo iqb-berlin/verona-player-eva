@@ -21,3 +21,14 @@ export enum FieldType {
   REPEAT_CONTROL,
   SCRIPT_ERROR
 }
+
+export interface KeyValuePairString {
+  [K: string]: string;
+}
+
+export interface StartData {
+  unitDefinition: string;
+  unitState: {
+    dataParts: KeyValuePairString
+  };
+}

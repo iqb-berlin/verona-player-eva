@@ -1,14 +1,8 @@
-import { Injectable } from '@angular/core';
-import { FieldType, PropertyKey } from './classes/interfaces';
-import { UIElement } from './classes/UIElement';
-import { RepeatBlock, UIBlock } from './classes/UIBlock';
+import { UIElement } from './UIElement';
+import { FieldType, PropertyKey } from './interfaces';
+import { RepeatBlock, UIBlock } from './UIBlock';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class DataService {
-  rootBlock = new UIBlock();
-
+export class ParserV1 {
   private static getParameter(line: string, pos: number): string {
     const lineSplits = line.split('??');
     const lineSplits2 = lineSplits[0].split('::');
@@ -130,7 +124,7 @@ export class DataService {
     return ed;
   }
 
-  static parseScript(scriptLines: string[], oldResponses: object, idSuffix = '', lineNumberOffset = 0): UIBlock {
+  static parseScript(scriptLines: string[], oldResponses: Record<string, string>, idSuffix = '', lineNumberOffset = 0): UIBlock {
     const elementKeys = ['text', 'header', 'title', 'hr', 'html', 'input-text', 'input-number', 'checkbox', 'multiple-choice', 'drop-down'];
     const myReturn = new UIBlock();
     let localLineNumber = 0;
@@ -150,7 +144,8 @@ export class DataService {
           const keyword = keywordList[0];
           if (elementKeys.includes(keyword)) {
             const newElement = this.readUIElement(
-              keyword, line, `${idSuffix}_${localIdCounter.toString()}`, lineNumberOffset + localLineNumber + 1);
+              keyword, line, `${idSuffix}_${localIdCounter.toString()}`, lineNumberOffset + localLineNumber + 1
+            );
             if (oldResponses[newElement.id]) {
               newElement.value = oldResponses[newElement.id];
             }
@@ -210,43 +205,4 @@ export class DataService {
     }
     return myReturn;
   }
-
-  static getPlayerMetadata(): Map<string, string> {
-    const myReturn: Map<string, string> = new Map();
-    const metaAttributes = document.querySelector('meta[name="application-name"]').attributes;
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < metaAttributes.length; i++) {
-      if (metaAttributes[i].localName === 'content') {
-        myReturn.set('name', metaAttributes[i].value);
-      } else if (metaAttributes[i].localName.substr(0, 5) === 'data-') {
-        myReturn.set(metaAttributes[i].localName.substr(5), metaAttributes[i].value);
-      }
-    }
-    return myReturn;
-  }
-
-  private static getBlockValues(b: UIBlock): object {
-    const myReturn = {};
-    b.elements.forEach((elementOrBlock: UIBlock | UIElement) => {
-      if (elementOrBlock instanceof UIElement) {
-        if (elementOrBlock.value) {
-          myReturn[elementOrBlock.id] = elementOrBlock.value;
-        }
-      } else if (elementOrBlock instanceof UIBlock) {
-        if (elementOrBlock instanceof RepeatBlock && elementOrBlock.value) {
-          myReturn[elementOrBlock.id] = elementOrBlock.value;
-        }
-        const subBlockValues = this.getBlockValues(elementOrBlock);
-        Object.keys(subBlockValues).forEach(key => {
-          myReturn[key] = subBlockValues[key];
-        });
-      }
-    });
-    return myReturn;
-  }
-
-  getValues(): object {
-    return DataService.getBlockValues(this.rootBlock);
-  }
-
 }

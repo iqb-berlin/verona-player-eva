@@ -6,7 +6,7 @@ import { PropertyKey } from '../../classes/interfaces';
 import { UIElement } from '../../classes/UIElement';
 
 @Component({
-  selector: 'app-checkbox',
+  selector: 'player-checkbox',
   template: `
     <div fxLayout="row" fxLayoutAlign="space-between center" fxFill>
       <div fxFlex="50" *ngIf="preText">

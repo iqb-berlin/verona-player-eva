@@ -5,7 +5,7 @@ import { FieldType, PropertyKey } from '../../classes/interfaces';
 import { UIElement } from '../../classes/UIElement';
 
 @Component({
-  selector: 'app-text',
+  selector: 'player-text',
   template: `
     <ng-container *ngIf="content" [ngSwitch]="elementDataAsUIElement.fieldType">
       <p *ngSwitchCase="fieldType.TEXT">{{content}}</p>
