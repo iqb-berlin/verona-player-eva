@@ -18,6 +18,7 @@ import { InputComponent } from './components/input/input.component';
 import { TextComponent } from './components/text/text.component';
 import { createCustomElement } from '@angular/elements';
 import {PlayerComponent} from './player.component';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import {PlayerComponent} from './player.component';
   ],
   imports: [
     BrowserModule,
+    NoopAnimationsModule,
     MatButtonModule,
     MatInputModule,
     FlexLayoutModule,

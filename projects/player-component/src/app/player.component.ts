@@ -1,6 +1,6 @@
-import {Component, EventEmitter, Output, ViewEncapsulation} from '@angular/core';
+import {Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
 import {FormGroup} from '@angular/forms';
-import {StartData} from './classes/interfaces';
+import {KeyValuePairString, StartData} from './classes/interfaces';
 import {ParserV1} from './classes/ParserV1';
 import {RepeatBlock, UIBlock} from './classes/UIBlock';
 import {UIElement} from './classes/UIElement';
@@ -18,6 +18,19 @@ import {UIElement} from './classes/UIElement';
 })
 export class PlayerComponent {
   @Output() valueChanged = new EventEmitter<string>();
+  private _startData: StartData = {
+    unitDefinition: '',
+    unitState: {
+      dataParts: {}
+    }
+  };
+  get startData(): StartData {
+    return this._startData;
+  }
+  @Input()
+  set startData(val: StartData) {
+    this.setStartData(val);
+  }
   // @Output() ready = new EventEmitter();
   form = new FormGroup({});
   rootBlock = new UIBlock();
@@ -42,7 +55,8 @@ export class PlayerComponent {
     return myReturn;
   }
 
-  public setStartData(startData: StartData): void {
+  private setStartData(startData: StartData): void {
+    this._startData = startData;
     if (startData.unitDefinition) {
       let storedResponses = {};
       if (startData.unitState && startData.unitState.dataParts) {

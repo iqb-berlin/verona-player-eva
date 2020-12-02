@@ -11,8 +11,7 @@ import { SourceInputDialogComponent } from './source-input-dialog/source-input-d
   template: `
     <mat-card fxLayout="column" class="page">
       <mat-card-content>
-        <div id="player-host"></div>
-        <!--<player-component id="myPlayer" (valueChanged)="elementValueChanged($event)"></player-component>-->
+        <player-component [startData]="playerStartData" (valueChanged)="elementValueChanged($event)"></player-component>
       </mat-card-content>
       <mat-card-actions *ngIf="!isProductionMode">
         <button mat-raised-button (click)="setNewScript()" matTooltip="Script eingeben">load</button>
@@ -22,11 +21,18 @@ import { SourceInputDialogComponent } from './source-input-dialog/source-input-d
       </mat-card-actions>
     </mat-card>
   `,
-  styles: ['.page {background-color: white; max-width: 900px; margin-left: auto; margin-right: auto;}']
+  styles: [
+    '.page {background-color: white; max-width: 900px; margin-left: auto; margin-right: auto;}'
+  ]
 })
 export class AppComponent implements AfterViewInit {
   @Inject('IS_PRODUCTION_MODE') readonly isProductionMode: boolean;
-  player: PlayerComponent;
+  playerStartData = {
+    unitDefinition: '',
+    unitState: {
+      dataParts: { allResponses: {} }
+    }
+  };
   playerMetadata = new Map<string, string>();
   storedResponses = '{}';
   tempResponses = '{}';
@@ -75,11 +81,6 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      const playerHostElement = document.getElementById('player-host');
-      const PlayerComponentClass = customElements.get('player-component');
-      this.player = new PlayerComponentClass() as PlayerComponent;
-      console.log('this.player', this.player);
-      playerHostElement.appendChild(this.player);
       this.playerMetadata = AppComponent.getPlayerMetadata();
       if (this.isProductionMode) {
         window.addEventListener('message', (event: MessageEvent) => {
@@ -89,7 +90,7 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
                 case 'vopStartCommand':
                   if (event.data.sessionId) {
                     this.sessionId = event.data.sessionId;
-                    this.player.setStartData(event.data);
+                    this.playerStartData = event.data;
                   } else {
                     console.error('player: (vopStartCommand) no sessionId is given');
                   }
@@ -128,19 +129,14 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
           supportedUnitStateDataTypes: this.playerMetadata.get('supported-unit-state-data-types')
         }, '*');
       } else {
-        this.setScript();
+        this.playerStartData = {
+          unitDefinition: this.myScript,
+          unitState: {
+            dataParts: { allResponses: this.storedResponses }
+          }
+        };
       }
     });
-  }
-
-  setScript(): void {
-    const playerData = {
-      unitDefinition: this.myScript,
-      unitState: {
-        dataParts: { allResponses: this.storedResponses }
-      }
-    };
-    this.player.setStartData(playerData);
   }
 
   setNewScript(): void {
@@ -152,12 +148,17 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
       if (result) {
         this.storedResponses = '{}';
         this.myScript = result;
-        this.setScript();
+        this.playerStartData = {
+          unitDefinition: this.myScript,
+          unitState: {
+            dataParts: { allResponses: this.storedResponses }
+          }
+        };
       }
     });
   }
 
-  elementValueChanged(value: string): void {
+  elementValueChanged(event): void {
     if (this.isProductionMode) {
       window.parent.postMessage({
         type: 'vopStateChangedNotification',
@@ -165,14 +166,14 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
         timeStamp: Date.now(),
         unitState: {
           dataParts: {
-            allResponses: value
+            allResponses: event.detail
           },
           unitStateType: this.playerMetadata.get('supported-unit-state-data-types')
         }
       }, '*');
     } else {
-      this.tempResponses = value;
-      console.log('player sends data', value);
+      this.tempResponses = event.detail;
+      console.log('player sends data', event.detail);
       // ;
     }
   }
@@ -182,7 +183,12 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
   }
 
   responsesRestore(): void {
-    this.setScript();
+    this.playerStartData = {
+      unitDefinition: this.myScript,
+      unitState: {
+        dataParts: { allResponses: this.storedResponses }
+      }
+    };
     console.log('restored', this.storedResponses);
   }
 }
