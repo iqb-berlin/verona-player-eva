@@ -1,19 +1,20 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { StartData } from './classes/interfaces';
-import { ParserV1 } from './classes/ParserV1';
-import { RepeatBlock, UIBlock } from './classes/UIBlock';
-import { UIElement } from './classes/UIElement';
+import {Component, EventEmitter, Output, ViewEncapsulation} from '@angular/core';
+import {FormGroup} from '@angular/forms';
+import {StartData} from './classes/interfaces';
+import {ParserV1} from './classes/ParserV1';
+import {RepeatBlock, UIBlock} from './classes/UIBlock';
+import {UIElement} from './classes/UIElement';
 
 @Component({
-  selector: 'player-form',
   template: `
+    <p>player-component alive!</p>
     <form  [formGroup]="form">
       <div *ngFor="let e of rootBlock.elements">
         <player-sub-form [elementData]="e" (elementDataChange)="formValueChanged()" [parentForm]="form"></player-sub-form>
       </div>
     </form>
-  `
+  `,
+  encapsulation: ViewEncapsulation.ShadowDom
 })
 export class PlayerComponent {
   @Output() valueChanged = new EventEmitter<string>();

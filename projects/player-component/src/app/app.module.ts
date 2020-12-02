@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { BrowserModule } from '@angular/platform-browser';
+import { Injector, NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { FlexLayoutModule } from '@angular/flex-layout';
@@ -9,7 +9,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { PlayerComponent } from './player.component';
 import { SubFormComponent } from './components/sub-form/sub-form.component';
 import { RepeatComponent } from './components/repeat/repeat.component';
 import { InputErrorPipe } from './components/input-error.pipe';
@@ -17,6 +16,8 @@ import { SelectComponent } from './components/select/select.component';
 import { CheckboxComponent } from './components/checkbox/checkbox.component';
 import { InputComponent } from './components/input/input.component';
 import { TextComponent } from './components/text/text.component';
+import { createCustomElement } from '@angular/elements';
+import {PlayerComponent} from './player.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,7 @@ import { TextComponent } from './components/text/text.component';
     PlayerComponent
   ],
   imports: [
-    CommonModule,
+    BrowserModule,
     MatButtonModule,
     MatInputModule,
     FlexLayoutModule,
@@ -42,8 +43,15 @@ import { TextComponent } from './components/text/text.component';
     ReactiveFormsModule,
     MatExpansionModule
   ],
-  exports: [
+  entryComponents: [
     PlayerComponent
   ]
 })
-export class PlayerModule { }
+export class AppModule {
+  constructor(private injector: Injector) {}
+  ngDoBootstrap(): void {
+    const playerElement = createCustomElement(PlayerComponent, { injector: this.injector });
+    console.log('defining player-component');
+    customElements.define('player-component', playerElement);
+  }
+}

@@ -1,20 +1,22 @@
 import {
-  AfterViewInit, Component, Inject, ViewChild
+  AfterViewInit, Component, Directive, ElementRef, Inject, ViewChild
 } from '@angular/core';
+import {t as PlayerComponent} from './player-component/player-component';
+
 import { MatDialog } from '@angular/material/dialog';
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
-import { PlayerComponent } from './player/player.component';
 
 @Component({
   selector: 'app-root',
   template: `
     <mat-card fxLayout="column" class="page">
       <mat-card-content>
-        <player-form #player (valueChanged)="elementValueChanged($event)"></player-form>
+        <div id="player-host"></div>
+        <!--<player-component id="myPlayer" (valueChanged)="elementValueChanged($event)"></player-component>-->
       </mat-card-content>
       <mat-card-actions *ngIf="!isProductionMode">
         <button mat-raised-button (click)="setNewScript()" matTooltip="Script eingeben">load</button>
-        <button mat-raised-button (click)="player.tryLeaveNotify()" matTooltip="Zeige Korrekturbedarf">validate</button>
+        <!--<button mat-raised-button (click)="player.tryLeaveNotify()" matTooltip="Zeige Korrekturbedarf">validate</button>-->
         <button mat-raised-button (click)="responsesSave()" matTooltip="Speichere die aktuellen Antworten">save</button>
         <button mat-raised-button (click)="responsesRestore()" matTooltip="Stelle alle gespeicherten Antworten wieder her">restore</button>
       </mat-card-actions>
@@ -24,7 +26,7 @@ import { PlayerComponent } from './player/player.component';
 })
 export class AppComponent implements AfterViewInit {
   @Inject('IS_PRODUCTION_MODE') readonly isProductionMode: boolean;
-  @ViewChild(PlayerComponent) player: PlayerComponent;
+  player: PlayerComponent;
   playerMetadata = new Map<string, string>();
   storedResponses = '{}';
   tempResponses = '{}';
@@ -73,6 +75,11 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
 
   ngAfterViewInit(): void {
     setTimeout(() => {
+      const playerHostElement = document.getElementById('player-host');
+      const PlayerComponentClass = customElements.get('player-component');
+      this.player = new PlayerComponentClass() as PlayerComponent;
+      console.log('this.player', this.player);
+      playerHostElement.appendChild(this.player);
       this.playerMetadata = AppComponent.getPlayerMetadata();
       if (this.isProductionMode) {
         window.addEventListener('message', (event: MessageEvent) => {
