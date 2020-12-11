@@ -3,15 +3,15 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { UIElement } from '../classes/UIElement';
-import { RepeatBlock } from '../classes/UIBlock';
+import { IfThenElseBlock, RepeatBlock } from '../classes/UIBlock';
 import { FieldType } from '../classes/interfaces';
 
 @Directive()
 // tslint:disable-next-line:directive-class-suffix
 export abstract class ElementComponent {
-  @Input() elementData: UIElement | RepeatBlock;
+  @Input() elementData: UIElement | RepeatBlock | IfThenElseBlock;
   @Input() parentForm: FormGroup;
-  @Output() elementDataChange = new EventEmitter<UIElement | RepeatBlock>();
+  @Output() elementDataChange = new EventEmitter<UIElement | RepeatBlock | IfThenElseBlock>();
   @Output() valueChange = new EventEmitter<string>();
   fieldType = FieldType;
 
@@ -44,11 +44,26 @@ export abstract class ElementComponent {
     return null;
   }
 
+  get elementDataAsIfThenElseBlock(): IfThenElseBlock {
+    if (this.elementData && this.elementData instanceof IfThenElseBlock) {
+      return this.elementData as IfThenElseBlock;
+    }
+    return null;
+  }
+
   elementIsUIElement(): boolean {
     return this.elementData && this.elementData instanceof UIElement;
   }
 
   elementIsRepeatBlock(): boolean {
     return this.elementData && this.elementData instanceof RepeatBlock;
+  }
+
+  elementIsIfThenElseBlockTrue(): boolean {
+    return this.elementData && this.elementData instanceof IfThenElseBlock && this.elementData.value === 'true';
+  }
+
+  elementIsIfThenElseBlockFalse(): boolean {
+    return this.elementData && this.elementData instanceof IfThenElseBlock && this.elementData.value !== 'true';
   }
 }

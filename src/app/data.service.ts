@@ -1,13 +1,18 @@
 import { Injectable } from '@angular/core';
 import { FieldType, PropertyKey } from './classes/interfaces';
 import { UIElement } from './classes/UIElement';
-import { RepeatBlock, UIBlock } from './classes/UIBlock';
+import { IfThenElseBlock, RepeatBlock, UIBlock } from './classes/UIBlock';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
   rootBlock = new UIBlock();
+
+  private static getKeyword(line: string): string {
+    const keywordList = line.match(/[a-z-]+/);
+    return (keywordList && keywordList.length > 0) ? keywordList[0] : '';
+  }
 
   private static getParameter(line: string, pos: number): string {
     const lineSplits = line.split('??');
@@ -137,20 +142,17 @@ export class DataService {
     let scriptVersionMajor = 0;
     let scriptVersionMinor = 0;
     if (scriptLines.length > 1) {
-      const scriptKeywordList = scriptLines[0].match(/[a-z-]+/);
-      if (scriptKeywordList && scriptKeywordList.length > 0) {
-        const scriptKeyword = scriptKeywordList[0];
-        if (scriptKeyword.toLowerCase() !== 'iqb-scripted') {
-          const versionString = this.getParameter(scriptLines[0], 1);
-          if (versionString) {
-            const versionNumbers = versionString.match(/\d+/);
-            let versionNumberTry = Number(versionNumbers[1]);
+      const scriptKeyword = this.getKeyword(scriptLines[0]);
+      if (scriptKeyword === 'iqb-scripted') {
+        const versionString = this.getParameter(scriptLines[0], 1);
+        if (versionString) {
+          const versionNumbers = versionString.match(/\d+/);
+          let versionNumberTry = Number(versionNumbers[1]);
+          if (!Number.isNaN(versionNumberTry)) {
+            scriptVersionMinor = versionNumberTry;
+            versionNumberTry = Number(versionNumbers[0]);
             if (!Number.isNaN(versionNumberTry)) {
-              scriptVersionMinor = versionNumberTry;
-              versionNumberTry = Number(versionNumbers[0]);
-              if (!Number.isNaN(versionNumberTry)) {
-                scriptVersionMajor = versionNumberTry;
-              }
+              scriptVersionMajor = versionNumberTry;
             }
           }
         }
@@ -173,9 +175,8 @@ export class DataService {
           }
         }
         if (line) {
-          const keywordList = line.match(/[a-z-]+/);
-          if (keywordList && keywordList.length > 0) {
-            const keyword = keywordList[0];
+          const keyword = this.getKeyword(line);
+          if (keyword) {
             if (elementKeys.includes(keyword)) {
               const newElement = this.readUIElement(
                 keyword, line, `${idSuffix}_${localIdCounter.toString()}`, lineNumberOffset + localLineNumber + 1,
@@ -200,8 +201,8 @@ export class DataService {
               while (localLineNumber < scriptLines.length) {
                 const subLine = scriptLines[localLineNumber];
                 localLineNumber += 1;
-                const subKeywordList = subLine.match(/^\s*repeat-end\s*$/);
-                if (subKeywordList && subKeywordList.length > 0) {
+                const subKeyword = this.getKeyword(subLine);
+                if (subKeyword === 'repeat-end') {
                   break;
                 } else {
                   blockLines.push(subLine);
@@ -219,6 +220,58 @@ export class DataService {
                     b.setSubBlockNumber(valueNumberTry, oldResponses);
                   }
                 }
+                myReturn.elements.push(b);
+              }
+            } else if (keyword === 'if-start') {
+              const b = new IfThenElseBlock(this.getParameter(line, 1), this.getParameter(line, 2));
+              let nesting = 0;
+              let isElseBlock = false;
+              const trueBlockLines: string[] = [];
+              const falseBlockLines: string[] = [];
+              while (localLineNumber < scriptLines.length) {
+                const subLine = scriptLines[localLineNumber];
+                localLineNumber += 1;
+                const subKeyword = this.getKeyword(subLine);
+                if (subKeyword === 'if-start') {
+                  nesting += 1;
+                  if (isElseBlock) {
+                    falseBlockLines.push(subLine);
+                  } else {
+                    trueBlockLines.push(subLine);
+                  }
+                } else if (subKeyword === 'if-else') {
+                  if (nesting === 0) {
+                    isElseBlock = true;
+                  } else if (isElseBlock) {
+                    falseBlockLines.push(subLine);
+                  } else {
+                    trueBlockLines.push(subLine);
+                  }
+                } else if (subKeyword === 'if-end') {
+                  if (nesting === 0) {
+                    break;
+                  } else {
+                    nesting -= 1;
+                    if (isElseBlock) {
+                      falseBlockLines.push(subLine);
+                    } else {
+                      trueBlockLines.push(subLine);
+                    }
+                  }
+                }
+              }
+              if (trueBlockLines.length > 0) {
+                let tmpBlock = this.parseScript(trueBlockLines, {},
+                  `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
+                localIdCounter += 1;
+                b.trueElements = tmpBlock.elements;
+                if (falseBlockLines.length > 0) {
+                  tmpBlock = this.parseScript(falseBlockLines, {},
+                    `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
+                  localIdCounter += 1;
+                  b.falseElements = tmpBlock.elements;
+                }
+                // todo oldResponses
                 myReturn.elements.push(b);
               }
             } else {

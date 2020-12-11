@@ -60,3 +60,17 @@ export class RepeatBlock extends UIBlock {
     this.elements = newBlocks;
   }
 }
+
+export class IfThenElseBlock extends UIBlock {
+  value = '';
+  conditionVariableName = '';
+  conditionTrueValue = '';
+  trueElements: (UIElement | UIBlock)[];
+  falseElements: (UIElement | UIBlock)[];
+
+  constructor(conditionVariableName: string, conditionTrueValue: string) {
+    super();
+    this.conditionVariableName = conditionVariableName;
+    this.conditionTrueValue = conditionTrueValue;
+  }
+}
