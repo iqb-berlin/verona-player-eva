@@ -11,6 +11,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import './player-component/player-component.js';
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
 import { AppComponent } from './app.component';
+import {MatSelectModule} from '@angular/material/select';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatInputModule} from '@angular/material/input';
 
 @NgModule({
   declarations: [
@@ -25,6 +28,9 @@ import { AppComponent } from './app.component';
     MatCardModule,
     MatFormFieldModule,
     MatButtonModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatInputModule,
     MatTooltipModule,
     FlexLayoutModule
   ],

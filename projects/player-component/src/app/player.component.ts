@@ -14,7 +14,7 @@ import {UIElement} from './classes/UIElement';
       </div>
     </form>
   `,
-  encapsulation: ViewEncapsulation.ShadowDom
+  encapsulation: ViewEncapsulation.None
 })
 export class PlayerComponent {
   @Output() valueChanged = new EventEmitter<string>();
