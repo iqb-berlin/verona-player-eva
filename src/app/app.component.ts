@@ -22,14 +22,24 @@ checkbox::soso::1::vorher nee aber doch::nachher hmpf
 multiple-choice::mc433::0::label für MC::Apfel##Birne##Banane##Orange
 multiple-choice::mc4337::1::::Möhre##Rübe##Kohl
 drop-down::mc4344::1::label für Dropdown::Apfel##Birne##Banane##Orange
-text::so was geht doch ü
+if-start::mc4344::1
+  text::Du hast "Apfel" gewählt.
+  if-start::mc4337::1
+    text::Du hast auch noch "Möhre" gewählt.
+  if-end
+if-else
+  text::Du hast NICHT "Apfel" gewählt.
+if-end
 hr
 
 title::Titel
 repeat-start::examineecount::Wie viele Prüflinge gibt es?::Angaben zu Prüfling::20??Sie können Angaben zu maximal 20 Prüflingen eintragen. Sollten sich im Kurs mehr als 20 Prüflinge befinden, ist eine Auswahl vorzunehmen. Diese Auswahl sollte so erfolgen, dass ein möglichst breites Leistungsspektrum abgebildet wird. Vermieden werden sollte eine selektive Berücksichtigung bzw. Nichtberücksichtigung bestimmter Gruppen (z. B. besonders leistungsschwache oder leistungsstarke Prüflinge, Schülerinnen und Schüler mit nichtdeutscher Herkunftssprache).
     input-number::task1::1::Teilaufgabe 1::::0::10
-    input-number::task2::1::Teilaufgabe 2::::0::10
-    input-number::task3::1::Teilaufgabe 3::::0::10
+    if-start::mc4337::1
+      input-number::task2::1::Teilaufgabe Möhre::::0::10
+    if-else
+      input-number::task3::1::Teilaufgabe nicht Möhre::::0::10
+    if-end
 repeat-end
 text::so was geht doch ö
 
@@ -64,7 +74,7 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
                         storedResponses = JSON.parse(storedResponsesRaw.allResponses);
                       }
                     }
-                    this.ds.rootBlock = DataService.parseScript(event.data.unitDefinition.split('\n'), storedResponses);
+                    this.ds.setElements(event.data.unitDefinition.split('\n'), storedResponses);
                   } else {
                     console.error('player: (vopStartCommand) no unitDefinition is given');
                   }
@@ -111,7 +121,8 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
   }
 
   setScript(): void {
-    this.ds.rootBlock = DataService.parseScript(this.myScript.split('\n'), JSON.parse(this.storedResponses));
+    this.ds.setElements(this.myScript.split('\n'), JSON.parse(this.storedResponses));
+    console.log('this.ds.rootBlock', this.ds.rootBlock);
   }
 
   setNewScript(): void {
@@ -129,6 +140,8 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
   }
 
   elementValueChanged(): void {
+    const myNewValues = this.ds.getValues();
+    this.ds.rootBlock.check(myNewValues);
     if (this.isProductionMode) {
       window.parent.postMessage({
         type: 'vopStateChangedNotification',
@@ -136,22 +149,22 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
         timeStamp: Date.now(),
         unitState: {
           dataParts: {
-            allResponses: JSON.stringify(this.ds.getValues())
+            allResponses: JSON.stringify(myNewValues)
           },
           unitStateType: this.playerMetadata.get('supported-unit-state-data-types')
         }
       }, '*');
     } else {
-      console.log(this.ds.getValues());
+      console.log(myNewValues);
       // ;
     }
   }
 
-  responsesSave() {
+  responsesSave(): void {
     this.storedResponses = JSON.stringify(this.ds.getValues());
   }
 
-  responsesRestore() {
+  responsesRestore(): void {
     this.setScript();
     console.log(this.ds.getValues());
   }

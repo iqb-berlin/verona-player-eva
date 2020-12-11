@@ -64,6 +64,6 @@ export abstract class ElementComponent {
   }
 
   elementIsIfThenElseBlockFalse(): boolean {
-    return this.elementData && this.elementData instanceof IfThenElseBlock && this.elementData.value !== 'true';
+    return this.elementData && this.elementData instanceof IfThenElseBlock && this.elementData.value === 'false';
   }
 }

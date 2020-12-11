@@ -8,6 +8,38 @@ import { IfThenElseBlock, RepeatBlock, UIBlock } from './classes/UIBlock';
 })
 export class DataService {
   rootBlock = new UIBlock();
+  scriptVersionMajor = 0;
+  scriptVersionMinor = 0;
+
+  setElements(scriptLines: string[], oldResponses: Record<string, string>): void {
+    if (scriptLines.length > 1) {
+      const scriptKeyword = DataService.getKeyword(scriptLines[0]);
+      if (scriptKeyword === 'iqb-scripted') {
+        const versionString = DataService.getParameter(scriptLines[0], 1);
+        if (versionString) {
+          const versionNumbers = versionString.match(/\d+/g);
+          let versionNumberTry = Number(versionNumbers[1]);
+          if (!Number.isNaN(versionNumberTry)) {
+            this.scriptVersionMinor = versionNumberTry;
+            versionNumberTry = Number(versionNumbers[0]);
+            if (!Number.isNaN(versionNumberTry)) {
+              this.scriptVersionMajor = versionNumberTry;
+            }
+          }
+        }
+      }
+    }
+    if (this.scriptVersionMajor === 0) {
+      this.rootBlock = new UIBlock();
+      const ed = new UIElement('SCRIPT_ERROR', FieldType.SCRIPT_ERROR);
+      ed.properties.set(PropertyKey.TEXT, 'Scriptfehler: Scripttyp oder -version nicht erkannt (erste Zeile)');
+      this.rootBlock.elements.push(ed);
+    } else {
+      scriptLines.splice(0, 1);
+      this.rootBlock = DataService.parseScript(scriptLines, oldResponses, '', 0,
+        this.scriptVersionMajor, this.scriptVersionMinor);
+    }
+  }
 
   private static getKeyword(line: string): string {
     const keywordList = line.match(/[a-z-]+/);
@@ -136,149 +168,129 @@ export class DataService {
     return ed;
   }
 
-  static parseScript(scriptLines: string[], oldResponses: Record<string, string>, idSuffix = '', lineNumberOffset = 0): UIBlock {
+  private static parseScript(scriptLines: string[], oldResponses: Record<string, string>,
+                             idSuffix: string, lineNumberOffset: number,
+                             scriptVersionMajor: number, scriptVersionMinor: number): UIBlock {
     const elementKeys = ['text', 'header', 'title', 'hr', 'html', 'input-text', 'input-number', 'checkbox', 'multiple-choice', 'drop-down'];
     const myReturn = new UIBlock();
-    let scriptVersionMajor = 0;
-    let scriptVersionMinor = 0;
-    if (scriptLines.length > 1) {
-      const scriptKeyword = this.getKeyword(scriptLines[0]);
-      if (scriptKeyword === 'iqb-scripted') {
-        const versionString = this.getParameter(scriptLines[0], 1);
-        if (versionString) {
-          const versionNumbers = versionString.match(/\d+/);
-          let versionNumberTry = Number(versionNumbers[1]);
-          if (!Number.isNaN(versionNumberTry)) {
-            scriptVersionMinor = versionNumberTry;
-            versionNumberTry = Number(versionNumbers[0]);
-            if (!Number.isNaN(versionNumberTry)) {
-              scriptVersionMajor = versionNumberTry;
-            }
-          }
+    let localLineNumber = 0;
+    let localIdCounter = 1;
+    while (localLineNumber < scriptLines.length) {
+      let line = scriptLines[localLineNumber];
+      localLineNumber += 1;
+      if (line) {
+        const notEmptyCheck = /\S+/g.exec(line);
+        if (!notEmptyCheck) {
+          line = '';
         }
       }
-    }
-    if (scriptVersionMajor === 0) {
-      const ed = new UIElement('SCRIPT_ERROR', FieldType.SCRIPT_ERROR);
-      ed.properties.set(PropertyKey.TEXT, 'Scriptfehler: Scripttyp oder -version nicht erkannt (erste Zeile)');
-      myReturn.elements.push(ed);
-    } else {
-      let localLineNumber = 0;
-      let localIdCounter = 1;
-      while (localLineNumber < scriptLines.length) {
-        let line = scriptLines[localLineNumber];
-        localLineNumber += 1;
-        if (line) {
-          const notEmptyCheck = /\S+/g.exec(line);
-          if (!notEmptyCheck) {
-            line = '';
-          }
-        }
-        if (line) {
-          const keyword = this.getKeyword(line);
-          if (keyword) {
-            if (elementKeys.includes(keyword)) {
-              const newElement = this.readUIElement(
-                keyword, line, `${idSuffix}_${localIdCounter.toString()}`, lineNumberOffset + localLineNumber + 1,
-                scriptVersionMajor, scriptVersionMinor
-              );
-              if (oldResponses[newElement.id]) {
-                newElement.value = oldResponses[newElement.id];
+      if (line) {
+        const keyword = this.getKeyword(line);
+        if (keyword) {
+          if (elementKeys.includes(keyword)) {
+            const newElement = this.readUIElement(
+              keyword, line, `${idSuffix}_${localIdCounter.toString()}`, lineNumberOffset + localLineNumber + 1,
+              scriptVersionMajor, scriptVersionMinor
+            );
+            if (oldResponses[newElement.id]) {
+              newElement.value = oldResponses[newElement.id];
+            }
+            myReturn.elements.push(newElement);
+            localIdCounter += 1;
+          } else if (keyword === 'repeat-start') {
+            const parameter1 = this.getParameter(line, 1);
+            const b = new RepeatBlock(parameter1);
+            b.properties.set(PropertyKey.TEXT, this.getParameter(line, 2));
+            b.properties.set(PropertyKey.TEXT2, this.getParameter(line, 3));
+            b.helpText = this.getHelpText(line);
+            const parameter4 = this.getParameter(line, 4);
+            if (parameter4) {
+              b.properties.set(PropertyKey.MAX_VALUE, parameter4);
+            }
+            const blockLines: string[] = [];
+            while (localLineNumber < scriptLines.length) {
+              const subLine = scriptLines[localLineNumber];
+              localLineNumber += 1;
+              const subKeyword = this.getKeyword(subLine);
+              if (subKeyword === 'repeat-end') {
+                break;
+              } else {
+                blockLines.push(subLine);
               }
-              myReturn.elements.push(newElement);
+            }
+            if (blockLines.length > 0) {
+              const tmpBlock = this.parseScript(blockLines, {},
+                `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset,
+                scriptVersionMajor, scriptVersionMinor);
               localIdCounter += 1;
-            } else if (keyword === 'repeat-start') {
-              const parameter1 = this.getParameter(line, 1);
-              const b = new RepeatBlock(parameter1);
-              b.properties.set(PropertyKey.TEXT, this.getParameter(line, 2));
-              b.properties.set(PropertyKey.TEXT2, this.getParameter(line, 3));
-              b.helpText = this.getHelpText(line);
-              const parameter4 = this.getParameter(line, 4);
-              if (parameter4) {
-                b.properties.set(PropertyKey.MAX_VALUE, parameter4);
+              b.templateElements = tmpBlock.elements;
+              if (oldResponses[b.id]) {
+                const valueNumberTry = Number(oldResponses[b.id]);
+                if (!Number.isNaN(valueNumberTry)) {
+                  b.value = oldResponses[b.id];
+                  b.setSubBlockNumber(valueNumberTry, oldResponses);
+                }
               }
-              const blockLines: string[] = [];
-              while (localLineNumber < scriptLines.length) {
-                const subLine = scriptLines[localLineNumber];
-                localLineNumber += 1;
-                const subKeyword = this.getKeyword(subLine);
-                if (subKeyword === 'repeat-end') {
+              myReturn.elements.push(b);
+            }
+          } else if (keyword === 'if-start') {
+            const b = new IfThenElseBlock(`${idSuffix}_${localIdCounter.toString()}`, this.getParameter(line, 1), this.getParameter(line, 2));
+            localIdCounter += 1;
+            let nesting = 0;
+            let isElseBlock = false;
+            const trueBlockLines: string[] = [];
+            const falseBlockLines: string[] = [];
+            while (localLineNumber < scriptLines.length) {
+              const subLine = scriptLines[localLineNumber];
+              localLineNumber += 1;
+              const subKeyword = this.getKeyword(subLine);
+              if (subKeyword === 'if-start') {
+                nesting += 1;
+                if (isElseBlock) {
+                  falseBlockLines.push(subLine);
+                } else {
+                  trueBlockLines.push(subLine);
+                }
+              } else if (subKeyword === 'if-else') {
+                if (nesting === 0) {
+                  isElseBlock = true;
+                } else if (isElseBlock) {
+                  falseBlockLines.push(subLine);
+                } else {
+                  trueBlockLines.push(subLine);
+                }
+              } else if (subKeyword === 'if-end') {
+                if (nesting === 0) {
                   break;
                 } else {
-                  blockLines.push(subLine);
-                }
-              }
-              if (blockLines.length > 0) {
-                const tmpBlock = this.parseScript(blockLines, {},
-                  `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
-                localIdCounter += 1;
-                b.templateElements = tmpBlock.elements;
-                if (oldResponses[b.id]) {
-                  const valueNumberTry = Number(oldResponses[b.id]);
-                  if (!Number.isNaN(valueNumberTry)) {
-                    b.value = oldResponses[b.id];
-                    b.setSubBlockNumber(valueNumberTry, oldResponses);
-                  }
-                }
-                myReturn.elements.push(b);
-              }
-            } else if (keyword === 'if-start') {
-              const b = new IfThenElseBlock(this.getParameter(line, 1), this.getParameter(line, 2));
-              let nesting = 0;
-              let isElseBlock = false;
-              const trueBlockLines: string[] = [];
-              const falseBlockLines: string[] = [];
-              while (localLineNumber < scriptLines.length) {
-                const subLine = scriptLines[localLineNumber];
-                localLineNumber += 1;
-                const subKeyword = this.getKeyword(subLine);
-                if (subKeyword === 'if-start') {
-                  nesting += 1;
+                  nesting -= 1;
                   if (isElseBlock) {
                     falseBlockLines.push(subLine);
                   } else {
                     trueBlockLines.push(subLine);
                   }
-                } else if (subKeyword === 'if-else') {
-                  if (nesting === 0) {
-                    isElseBlock = true;
-                  } else if (isElseBlock) {
-                    falseBlockLines.push(subLine);
-                  } else {
-                    trueBlockLines.push(subLine);
-                  }
-                } else if (subKeyword === 'if-end') {
-                  if (nesting === 0) {
-                    break;
-                  } else {
-                    nesting -= 1;
-                    if (isElseBlock) {
-                      falseBlockLines.push(subLine);
-                    } else {
-                      trueBlockLines.push(subLine);
-                    }
-                  }
                 }
+              } else if (isElseBlock) {
+                falseBlockLines.push(subLine);
+              } else {
+                trueBlockLines.push(subLine);
               }
-              if (trueBlockLines.length > 0) {
-                let tmpBlock = this.parseScript(trueBlockLines, {},
-                  `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
-                localIdCounter += 1;
-                b.trueElements = tmpBlock.elements;
-                if (falseBlockLines.length > 0) {
-                  tmpBlock = this.parseScript(falseBlockLines, {},
-                    `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
-                  localIdCounter += 1;
-                  b.falseElements = tmpBlock.elements;
-                }
-                // todo oldResponses
-                myReturn.elements.push(b);
-              }
-            } else {
-              const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
+            }
+            if (trueBlockLines.length > 0) {
+              let tmpBlock = this.parseScript(trueBlockLines, {},
+                `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset,
+                scriptVersionMajor, scriptVersionMinor);
               localIdCounter += 1;
-              ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
-              myReturn.elements.push(ed);
+              b.trueElements = tmpBlock.elements;
+              if (falseBlockLines.length > 0) {
+                tmpBlock = this.parseScript(falseBlockLines, {},
+                  `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset,
+                  scriptVersionMajor, scriptVersionMinor);
+                localIdCounter += 1;
+                b.falseElements = tmpBlock.elements;
+              }
+              // todo oldResponses
+              myReturn.elements.push(b);
             }
           } else {
             const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
@@ -286,10 +298,15 @@ export class DataService {
             ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
             myReturn.elements.push(ed);
           }
-        } else { // empty line in form
-          myReturn.elements.push(new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.TEXT));
+        } else {
+          const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
           localIdCounter += 1;
+          ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
+          myReturn.elements.push(ed);
         }
+      } else { // empty line in form
+        myReturn.elements.push(new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.TEXT));
+        localIdCounter += 1;
       }
     }
     return myReturn;

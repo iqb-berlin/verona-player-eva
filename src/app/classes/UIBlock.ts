@@ -20,6 +20,14 @@ export class UIBlock {
     });
     return myReturn;
   }
+
+  check(values: Record<string, string>): void {
+    this.elements.forEach((e) => {
+      if (e instanceof UIBlock) {
+        e.check(values);
+      }
+    });
+  }
 }
 
 export class RepeatBlock extends UIBlock {
@@ -62,15 +70,50 @@ export class RepeatBlock extends UIBlock {
 }
 
 export class IfThenElseBlock extends UIBlock {
+  id = '';
   value = '';
   conditionVariableName = '';
   conditionTrueValue = '';
-  trueElements: (UIElement | UIBlock)[];
-  falseElements: (UIElement | UIBlock)[];
+  trueElements: (UIElement | UIBlock)[] = [];
+  falseElements: (UIElement | UIBlock)[] = [];
 
-  constructor(conditionVariableName: string, conditionTrueValue: string) {
+  constructor(id: string, conditionVariableName: string, conditionTrueValue: string) {
     super();
+    this.id = id;
     this.conditionVariableName = conditionVariableName;
     this.conditionTrueValue = conditionTrueValue;
+  }
+
+  check(values: Record<string, string>): void {
+    if (values[this.conditionVariableName]) {
+      if (values[this.conditionVariableName] === this.conditionTrueValue) {
+        this.value = 'true';
+        this.trueElements.forEach((e) => {
+          if (e instanceof UIBlock) {
+            e.check(values);
+          }
+        });
+      } else {
+        this.value = 'false';
+        this.falseElements.forEach((e) => {
+          if (e instanceof UIBlock) {
+            e.check(values);
+          }
+        });
+      }
+    } else {
+      this.value = '';
+      this.trueElements.forEach((e) => {
+        if (e instanceof UIBlock) {
+          e.check({});
+        }
+      });
+      this.falseElements.forEach((e) => {
+        if (e instanceof UIBlock) {
+          e.check({});
+        }
+      });
+    }
+    console.log('check', this.id);
   }
 }
