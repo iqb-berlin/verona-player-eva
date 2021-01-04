@@ -1,19 +1,42 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import {
+  AfterViewInit, Component, Directive, ElementRef, Inject, ViewChild
+} from '@angular/core';
+import {t as PlayerComponent} from './player-component/player-component';
+
 import { MatDialog } from '@angular/material/dialog';
-import { FormGroup } from '@angular/forms';
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
-import { DataService } from './data.service';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  template: `
+    <mat-card fxLayout="column" class="page">
+      <mat-card-content>
+        <player-component [startData]="playerStartData" (valueChanged)="elementValueChanged($event)"></player-component>
+      </mat-card-content>
+      <mat-card-actions *ngIf="!isProductionMode">
+        <button mat-raised-button (click)="setNewScript()" matTooltip="Script eingeben">load</button>
+        <!--<button mat-raised-button (click)="player.tryLeaveNotify()" matTooltip="Zeige Korrekturbedarf">validate</button>-->
+        <button mat-raised-button (click)="responsesSave()" matTooltip="Speichere die aktuellen Antworten">save</button>
+        <button mat-raised-button (click)="responsesRestore()" matTooltip="Stelle alle gespeicherten Antworten wieder her">restore</button>
+      </mat-card-actions>
+    </mat-card>
+  `,
+  styles: [
+    '.page {background-color: white; max-width: 900px; margin-left: auto; margin-right: auto;}'
+  ]
 })
-export class AppComponent implements OnInit {
-  form = new FormGroup({});
+export class AppComponent implements AfterViewInit {
+  @Inject('IS_PRODUCTION_MODE') readonly isProductionMode: boolean;
+  playerStartData = {
+    unitDefinition: '',
+    unitState: {
+      dataParts: { allResponses: {} }
+    }
+  };
   playerMetadata = new Map<string, string>();
-  sessionId = '';
   storedResponses = '{}';
+  tempResponses = '{}';
+  sessionId = '';
   myScript = `iqb-scripted::1.0
 html::And now <strong>this text here is bolded</strong>
 html::And hyperlinks such as <a href=”https://www.iqb.hu-berlin.de”>this one to the IQB website</a>
@@ -49,80 +72,81 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
 `;
 
   constructor(
-    public dialog: MatDialog,
-    @Inject('IS_PRODUCTION_MODE') readonly isProductionMode: boolean,
-    public ds: DataService
+    public dialog: MatDialog
   ) {}
 
-  ngOnInit(): void {
-    this.playerMetadata = DataService.getPlayerMetadata();
-    console.log('playerMetadata', this.playerMetadata);
-    if (this.isProductionMode) {
-      window.addEventListener('message', (event: MessageEvent) => {
-        if ('data' in event) {
-          if ('type' in event.data) {
-            switch (event.data.type) {
-              case 'vopStartCommand':
-                if (event.data.sessionId) {
-                  this.sessionId = event.data.sessionId;
-                  if (event.data.unitDefinition) {
-                    let storedResponses = {};
-                    if (event.data.unitState && event.data.unitState.dataParts) {
-                      console.log('event.data.unitState.dataParts', event.data.unitState.dataParts);
-                      const storedResponsesRaw = event.data.unitState.dataParts;
-                      if (storedResponsesRaw && storedResponsesRaw.allResponses) {
-                        storedResponses = JSON.parse(storedResponsesRaw.allResponses);
-                      }
-                    }
-                    this.ds.setElements(event.data.unitDefinition.split('\n'), storedResponses);
-                  } else {
-                    console.error('player: (vopStartCommand) no unitDefinition is given');
-                  }
-                } else {
-                  console.error('player: (vopStartCommand) no sessionId is given');
-                }
-                break;
-              case 'vopPageNavigationCommand':
-              case 'vopGetStateRequest':
-              case 'vopStopCommand':
-              case 'vopContinueCommand':
-                console.warn(`player: message of type ${event.data.type} not processed yet`);
-                break;
-              default:
-                console.warn(`player: got message of unknown type ${event.data.type}`);
-            }
-          }
-        }
-      });
-      window.addEventListener('blur', () => {
-        window.parent.postMessage({
-          type: 'vopWindowFocusChangedNotification',
-          sessionId: this.sessionId,
-          hasFocus: document.hasFocus()
-        }, '*');
-      });
-      window.addEventListener('focus', () => {
-        window.parent.postMessage({
-          type: 'vopWindowFocusChangedNotification',
-          sessionId: this.sessionId,
-          hasFocus: document.hasFocus()
-        }, '*');
-      });
-      window.parent.postMessage({
-        type: 'vopReadyNotification',
-        apiVersion: this.playerMetadata.get('version'),
-        notSupportedApiFeatures: this.playerMetadata.get('not-supported-api-features'),
-        supportedUnitDefinitionTypes: this.playerMetadata.get('supported-unit-definition-types'),
-        supportedUnitStateDataTypes: this.playerMetadata.get('supported-unit-state-data-types')
-      }, '*');
-    } else {
-      this.setScript();
+  static getPlayerMetadata(): Map<string, string> {
+    const myReturn: Map<string, string> = new Map();
+    const metaAttributes = document.querySelector('meta[name="application-name"]').attributes;
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < metaAttributes.length; i++) {
+      if (metaAttributes[i].localName === 'content') {
+        myReturn.set('name', metaAttributes[i].value);
+      } else if (metaAttributes[i].localName.substr(0, 5) === 'data-') {
+        myReturn.set(metaAttributes[i].localName.substr(5), metaAttributes[i].value);
+      }
     }
+    return myReturn;
   }
 
-  setScript(): void {
-    this.ds.setElements(this.myScript.split('\n'), JSON.parse(this.storedResponses));
-    console.log('this.ds.rootBlock', this.ds.rootBlock);
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.playerMetadata = AppComponent.getPlayerMetadata();
+      if (this.isProductionMode) {
+        window.addEventListener('message', (event: MessageEvent) => {
+          if ('data' in event) {
+            if ('type' in event.data) {
+              switch (event.data.type) {
+                case 'vopStartCommand':
+                  if (event.data.sessionId) {
+                    this.sessionId = event.data.sessionId;
+                    this.playerStartData = event.data;
+                  } else {
+                    console.error('player: (vopStartCommand) no sessionId is given');
+                  }
+                  break;
+                case 'vopPageNavigationCommand':
+                case 'vopGetStateRequest':
+                case 'vopStopCommand':
+                case 'vopContinueCommand':
+                  console.warn(`player: message of type ${event.data.type} not processed yet`);
+                  break;
+                default:
+                  console.warn(`player: got message of unknown type ${event.data.type}`);
+              }
+            }
+          }
+        });
+        window.addEventListener('blur', () => {
+          window.parent.postMessage({
+            type: 'vopWindowFocusChangedNotification',
+            sessionId: this.sessionId,
+            hasFocus: document.hasFocus()
+          }, '*');
+        });
+        window.addEventListener('focus', () => {
+          window.parent.postMessage({
+            type: 'vopWindowFocusChangedNotification',
+            sessionId: this.sessionId,
+            hasFocus: document.hasFocus()
+          }, '*');
+        });
+        window.parent.postMessage({
+          type: 'vopReadyNotification',
+          apiVersion: this.playerMetadata.get('version'),
+          notSupportedApiFeatures: this.playerMetadata.get('not-supported-api-features'),
+          supportedUnitDefinitionTypes: this.playerMetadata.get('supported-unit-definition-types'),
+          supportedUnitStateDataTypes: this.playerMetadata.get('supported-unit-state-data-types')
+        }, '*');
+      } else {
+        this.playerStartData = {
+          unitDefinition: this.myScript,
+          unitState: {
+            dataParts: { allResponses: this.storedResponses }
+          }
+        };
+      }
+    });
   }
 
   setNewScript(): void {
@@ -134,14 +158,17 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
       if (result) {
         this.storedResponses = '{}';
         this.myScript = result;
-        this.setScript();
+        this.playerStartData = {
+          unitDefinition: this.myScript,
+          unitState: {
+            dataParts: { allResponses: this.storedResponses }
+          }
+        };
       }
     });
   }
 
-  elementValueChanged(): void {
-    const myNewValues = this.ds.getValues();
-    this.ds.rootBlock.check(myNewValues);
+  elementValueChanged(event): void {
     if (this.isProductionMode) {
       window.parent.postMessage({
         type: 'vopStateChangedNotification',
@@ -149,23 +176,29 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
         timeStamp: Date.now(),
         unitState: {
           dataParts: {
-            allResponses: JSON.stringify(myNewValues)
+            allResponses: event.detail
           },
           unitStateType: this.playerMetadata.get('supported-unit-state-data-types')
         }
       }, '*');
     } else {
-      console.log(myNewValues);
+      this.tempResponses = event.detail;
+      console.log('player sends data', event.detail);
       // ;
     }
   }
 
   responsesSave(): void {
-    this.storedResponses = JSON.stringify(this.ds.getValues());
+    this.storedResponses = this.tempResponses;
   }
 
   responsesRestore(): void {
-    this.setScript();
-    console.log(this.ds.getValues());
+    this.playerStartData = {
+      unitDefinition: this.myScript,
+      unitState: {
+        dataParts: { allResponses: this.storedResponses }
+      }
+    };
+    console.log('restored', this.storedResponses);
   }
 }

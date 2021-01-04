@@ -11,7 +11,7 @@
   "parserOptions": {
     "ecmaVersion": 11,
     "sourceType": "module",
-    "project": "./src/tsconfig.base.json"
+    "project": "./projects/player-component/tsconfig.app.json"
   },
   "plugins": [
     "@typescript-eslint"
