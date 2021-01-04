@@ -3,8 +3,6 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { StartData } from './classes/interfaces';
-import { RepeatBlock, UIBlock } from './classes/UIBlock';
-import { UIElement } from './classes/UIElement';
 import { DataService } from './data.service';
 
 @Component({

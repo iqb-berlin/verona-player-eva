@@ -1,8 +1,6 @@
 import {
-  AfterViewInit, Component, Directive, ElementRef, Inject, ViewChild
+  AfterViewInit, Component, Inject
 } from '@angular/core';
-import {t as PlayerComponent} from './player-component/player-component';
-
 import { MatDialog } from '@angular/material/dialog';
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
 
@@ -33,6 +31,7 @@ export class AppComponent implements AfterViewInit {
       dataParts: { allResponses: {} }
     }
   };
+
   playerMetadata = new Map<string, string>();
   storedResponses = '{}';
   tempResponses = '{}';
@@ -168,7 +167,7 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     });
   }
 
-  elementValueChanged(event): void {
+  elementValueChanged(event: CustomEvent): void {
     if (this.isProductionMode) {
       window.parent.postMessage({
         type: 'vopStateChangedNotification',

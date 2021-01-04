@@ -1,8 +1,9 @@
 // packing player files to one
 
-const fs = require('fs');
-const readFileSync = fs.readFileSync;
-const writeFileSync = fs.writeFileSync;
+import fs from 'fs';
+
+const { readFileSync } = fs;
+const { writeFileSync } = fs;
 
 const applicationFolder = `${__dirname}/../../`;
 const args = process.argv;
@@ -12,7 +13,7 @@ const targetFileNameCss = `${applicationFolder}src/app/${args[2]}/${args[2]}.css
 let fileContentJs = '';
 let fileContentCss = '';
 
-fs.readdirSync(sourceFolder).forEach(file => {
+fs.readdirSync(sourceFolder).forEach((file) => {
   const i = file.lastIndexOf('.');
   if (i > 0) {
     const fileExtension = file.substr(i + 1);
@@ -36,4 +37,4 @@ if (fileContentJs) {
   writeFileSync(targetFileNameJs, fileContentJs, 'utf8');
   console.log(`writing ${targetFileNameJs}`);
 }
-console.log(`finished`);
+console.log('finished');
