@@ -64,6 +64,10 @@
     "typescript": "~4.0.5"
   },
   "eslintConfig": {
-    "extends": "@iqb/eslint-config-typescript"
+    "extends": "@iqb/eslint-config-typescript",
+    "parserOptions": {
+      "project": ["./projects/player-component/tsconfig.app.json",
+        "./src/tsconfig.app.json"]
+    }
   }
 }

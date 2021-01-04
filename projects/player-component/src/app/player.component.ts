@@ -10,7 +10,8 @@ import { DataService } from './data.service';
     <p>player-component alive!</p>
     <form  [formGroup]="form">
       <div *ngFor="let e of ds.rootBlock.elements">
-        <player-sub-form [elementData]="e" (elementDataChange)="formValueChanged()" [parentForm]="form"></player-sub-form>
+        <player-sub-form [elementData]="e" (elementDataChange)="formValueChanged()" [parentForm]="form">
+        </player-sub-form>
       </div>
     </form>
   `,
@@ -18,7 +19,7 @@ import { DataService } from './data.service';
 })
 export class PlayerComponent {
   @Output() valueChanged = new EventEmitter<string>();
-  private localStartData: StartData = {
+  private _startData: StartData = {
     unitDefinition: '',
     unitState: {
       dataParts: {}
@@ -26,7 +27,7 @@ export class PlayerComponent {
   };
 
   get startData(): StartData {
-    return this.localStartData;
+    return this._startData;
   }
 
   @Input()
@@ -42,7 +43,7 @@ export class PlayerComponent {
   ) {}
 
   private setStartData(startData: StartData): void {
-    this.localStartData = startData;
+    this._startData = startData;
     if (startData.unitDefinition) {
       let storedResponses = {};
       if (startData.unitState && startData.unitState.dataParts) {

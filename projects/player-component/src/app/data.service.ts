@@ -163,7 +163,8 @@ export class DataService {
         break;
       default:
         ed = new UIElement(`id${idSuffix}`, FieldType.SCRIPT_ERROR);
-        ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${lineNumber.toString()}: ungültiges Schlüsselwort ${keyword}`);
+        ed.properties.set(PropertyKey.TEXT,
+          `Scriptfehler Zeile ${lineNumber.toString()}: ungültiges Schlüsselwort ${keyword}`);
     }
     return ed;
   }
@@ -171,7 +172,8 @@ export class DataService {
   private static parseScript(scriptLines: string[], oldResponses: Record<string, string>,
                              idSuffix: string, lineNumberOffset: number,
                              scriptVersionMajor: number, scriptVersionMinor: number): UIBlock {
-    const elementKeys = ['text', 'header', 'title', 'hr', 'html', 'input-text', 'input-number', 'checkbox', 'multiple-choice', 'drop-down'];
+    const elementKeys = ['text', 'header', 'title', 'hr', 'html',
+      'input-text', 'input-number', 'checkbox', 'multiple-choice', 'drop-down'];
     const myReturn = new UIBlock();
     let localLineNumber = 0;
     let localIdCounter = 1;
@@ -234,7 +236,9 @@ export class DataService {
               myReturn.elements.push(b);
             }
           } else if (keyword === 'if-start') {
-            const b = new IfThenElseBlock(`${idSuffix}_${localIdCounter.toString()}`, this.getParameter(line, 1), this.getParameter(line, 2));
+            const b = new IfThenElseBlock(`${idSuffix}_${localIdCounter.toString()}`,
+              this.getParameter(line, 1),
+              this.getParameter(line, 2));
             localIdCounter += 1;
             let nesting = 0;
             let isElseBlock = false;
@@ -295,13 +299,15 @@ export class DataService {
           } else {
             const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
             localIdCounter += 1;
-            ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
+            ed.properties.set(PropertyKey.TEXT,
+              `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
             myReturn.elements.push(ed);
           }
         } else {
           const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
           localIdCounter += 1;
-          ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
+          ed.properties.set(PropertyKey.TEXT,
+            `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
           myReturn.elements.push(ed);
         }
       } else { // empty line in form
@@ -324,7 +330,7 @@ export class DataService {
           myReturn[elementOrBlock.id] = elementOrBlock.value;
         }
         const subBlockValues = this.getBlockValues(elementOrBlock);
-        Object.keys(subBlockValues).forEach((key) => {
+        Object.keys(subBlockValues).forEach(key => {
           myReturn[key] = subBlockValues[key];
         });
       }
