@@ -14,7 +14,7 @@ const targetFileNameCss = `${applicationFolder}src/app/${args[2]}/${args[2]}.css
 let fileContentJs = '';
 let fileContentCss = '';
 
-fs.readdirSync(sourceFolder).forEach((file) => {
+fs.readdirSync(sourceFolder).forEach(file => {
   const i = file.lastIndexOf('.');
   if (i > 0) {
     const fileExtension = file.substr(i + 1);
