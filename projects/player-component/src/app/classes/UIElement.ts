@@ -1,6 +1,14 @@
+// eslint-disable-next-line max-classes-per-file
 import { FieldType, PropertyKey } from './interfaces';
 
-export class UIElement {
+export class UIElementOrBlock {
+  getCopy(): UIElementOrBlock {
+    console.error(`${typeof this}: Missing overload for getCopy()!`);
+    return null;
+  }
+}
+
+export class UIElement implements UIElementOrBlock {
   id = '';
   fieldType: FieldType;
   required = false;
@@ -13,15 +21,15 @@ export class UIElement {
     this.fieldType = fieldType;
   }
 
-  static copyFrom(e: UIElement, idSuffix = ''): UIElement {
-    const myReturn = new UIElement(e.id + idSuffix, e.fieldType);
-    myReturn.required = e.required;
-    e.properties.forEach((value, key) => {
+  getCopy(idSuffix = ''): UIElement {
+    const myReturn = new UIElement(this.id + idSuffix, this.fieldType);
+    myReturn.required = this.required;
+    this.properties.forEach((value, key) => {
       myReturn.properties.set(key, value);
     });
-    myReturn.helpText = e.helpText;
+    myReturn.helpText = this.helpText;
     if (idSuffix.length === 0) {
-      myReturn.value = e.value;
+      myReturn.value = this.value;
     }
     return myReturn;
   }
