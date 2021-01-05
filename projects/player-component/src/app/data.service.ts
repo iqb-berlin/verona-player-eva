@@ -38,6 +38,7 @@ export class DataService {
       scriptLines.splice(0, 1);
       this.rootBlock = DataService.parseScript(scriptLines, oldResponses, '', 0,
         this.scriptVersionMajor, this.scriptVersionMinor);
+      this.rootBlock.check(oldResponses);
     }
   }
 

@@ -6,6 +6,7 @@
   },
   "files": [
     "main.ts",
+    "test.ts",
     "polyfills.ts"
   ],
   "include": [

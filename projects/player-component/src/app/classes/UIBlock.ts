@@ -1,28 +1,20 @@
 // eslint-disable-next-line max-classes-per-file
-import { UIElement } from './UIElement';
+import { UIElement, UIElementOrBlock } from './UIElement';
 import { PropertyKey } from './interfaces';
 
-export class UIBlock {
+export class UIBlock implements UIElementOrBlock {
   elements: (UIElement | UIBlock)[] = [];
 
-  static copyFrom(eb: UIElement | UIBlock): UIElement | UIBlock {
-    if (eb instanceof UIElement) {
-      return UIElement.copyFrom(eb);
-    }
+  getCopy(idSuffix = ''): UIBlock {
     const myReturn = new UIBlock();
-    eb.elements.forEach((e) => {
-      if (e instanceof UIElement) {
-        myReturn.elements.push(UIElement.copyFrom(e));
-      } else {
-        // todo nested blocks when copying from template (idSuffix, RepeatBlock etc.)
-        myReturn.elements.push(UIBlock.copyFrom(e));
-      }
+    this.elements.forEach(e => {
+      myReturn.elements.push(e.getCopy(idSuffix));
     });
     return myReturn;
   }
 
   check(values: Record<string, string>): void {
-    this.elements.forEach((e) => {
+    this.elements.forEach(e => {
       if (e instanceof UIBlock) {
         e.check(values);
       }
@@ -42,6 +34,19 @@ export class RepeatBlock extends UIBlock {
     this.id = id;
   }
 
+  getCopy(idSuffix = ''): RepeatBlock {
+    const myReturn = new RepeatBlock(this.id + idSuffix);
+    this.properties.forEach((value, key) => {
+      myReturn.properties.set(key, value);
+    });
+    myReturn.helpText = this.helpText;
+    this.templateElements.forEach(e => {
+      myReturn.templateElements.push(e.getCopy());
+    });
+    myReturn.value = this.value;
+    return myReturn;
+  }
+
   setSubBlockNumber(n: number, oldResponses = {}): void {
     const newBlocks: (UIElement | UIBlock)[] = [];
     const oldSubBlockNumber = this.elements.length;
@@ -50,17 +55,14 @@ export class RepeatBlock extends UIBlock {
         newBlocks.push(this.elements[i]);
       } else {
         const newBlock = new UIBlock();
-        this.templateElements.forEach((templateElement) => {
-          if (templateElement instanceof UIElement) {
-            const newElement = UIElement.copyFrom(templateElement, `_${(i + 1).toString()}`);
+        this.templateElements.forEach(templateElement => {
+          const newElement = templateElement.getCopy(`_${(i + 1).toString()}`);
+          if (newElement instanceof UIElement) {
             if (oldResponses[newElement.id]) {
               newElement.value = oldResponses[newElement.id];
             }
-            newBlock.elements.push(newElement);
-          } else {
-            // newBlock.elements.push(UIBlock.copyFrom(templateElement));
-            // todo new block with ids and old responses!
           }
+          newBlock.elements.push(newElement);
         });
         newBlocks.push(newBlock);
       }
@@ -84,18 +86,30 @@ export class IfThenElseBlock extends UIBlock {
     this.conditionTrueValue = conditionTrueValue;
   }
 
+  getCopy(idSuffix = ''): IfThenElseBlock {
+    const myReturn = new IfThenElseBlock(this.id + idSuffix, this.conditionVariableName, this.conditionTrueValue);
+    this.trueElements.forEach(e => {
+      myReturn.trueElements.push(e.getCopy(idSuffix));
+    });
+    this.falseElements.forEach(e => {
+      myReturn.falseElements.push(e.getCopy(idSuffix));
+    });
+    myReturn.value = this.value;
+    return myReturn;
+  }
+
   check(values: Record<string, string>): void {
     if (values[this.conditionVariableName]) {
       if (values[this.conditionVariableName] === this.conditionTrueValue) {
         this.value = 'true';
-        this.trueElements.forEach((e) => {
+        this.trueElements.forEach(e => {
           if (e instanceof UIBlock) {
             e.check(values);
           }
         });
       } else {
         this.value = 'false';
-        this.falseElements.forEach((e) => {
+        this.falseElements.forEach(e => {
           if (e instanceof UIBlock) {
             e.check(values);
           }
@@ -103,12 +117,12 @@ export class IfThenElseBlock extends UIBlock {
       }
     } else {
       this.value = '';
-      this.trueElements.forEach((e) => {
+      this.trueElements.forEach(e => {
         if (e instanceof UIBlock) {
           e.check({});
         }
       });
-      this.falseElements.forEach((e) => {
+      this.falseElements.forEach(e => {
         if (e instanceof UIBlock) {
           e.check({});
         }

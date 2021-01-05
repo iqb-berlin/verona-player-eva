@@ -18,6 +18,19 @@ import { ElementComponent } from '../element.component';
       <player-select *ngSwitchCase="fieldType.DROP_DOWN" [elementData]="elementData" (elementDataChange)="elementDataChange.emit(elementData)" [parentForm]="parentForm"></player-select>
     </ng-container>
     <player-repeat *ngIf="elementIsRepeatBlock()" [elementData]="elementData" (elementDataChange)="elementDataChange.emit(elementData)" [parentForm]="parentForm"></player-repeat>
+    <div *ngIf="elementIsIfThenElseBlockTrue()">
+      <div *ngFor="let e of elementData.trueElements">
+        <player-sub-form [elementData]="e" (elementDataChange)="elementDataChange.emit(elementData)" [parentForm]="parentForm">
+        </player-sub-form>
+      </div>
+    </div>
+    <div *ngIf="elementIsIfThenElseBlockFalse()">
+      <div *ngFor="let e of elementData.falseElements">
+        <player-sub-form [elementData]="e" (elementDataChange)="elementDataChange.emit(elementData)" [parentForm]="parentForm">
+        </player-sub-form>
+      </div>
+    </div>
+
   `
 })
 export class SubFormComponent extends ElementComponent {

@@ -153,7 +153,7 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
       height: '400px',
       width: '600px'
     });
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.storedResponses = '{}';
         this.myScript = result;

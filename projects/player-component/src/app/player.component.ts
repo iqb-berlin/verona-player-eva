@@ -55,7 +55,7 @@ export class PlayerComponent {
       }
       this.ds.setElements(startData.unitDefinition.split('\n'), storedResponses);
     } else {
-      console.error('player: (setStartData) no unitDefinition is given');
+      console.warn('player: (setStartData) no unitDefinition is given');
     }
   }
 
@@ -65,6 +65,7 @@ export class PlayerComponent {
 
   formValueChanged(): void {
     const allValues = this.ds.getValues();
+    this.ds.rootBlock.check(allValues);
     this.valueChanged.emit(JSON.stringify(allValues));
   }
 }
