@@ -63,7 +63,8 @@
     "parserOptions": {
       "project": [
         "./projects/player-component/tsconfig.app.json",
-        "./src/tsconfig.app.json"
+        "./src/tsconfig.app.json",
+        "./src/tsconfig.spec.json"
       ]
     }
   }
