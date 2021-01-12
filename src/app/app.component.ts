@@ -134,7 +134,7 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     return myReturn;
   }
 
-  setNewScript(): void {
+  loadNewScript(): void {
     const dialogRef = this.dialog.open(SourceInputDialogComponent, {
       height: '400px',
       width: '600px'
@@ -172,11 +172,11 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     }
   }
 
-  responsesSave(): void {
+  saveResponses(): void {
     this.storedResponses = this.tempResponses;
   }
 
-  responsesRestore(): void {
+  restoreResponses(): void {
     this.playerStartData = {
       unitDefinition: this.myScript,
       unitState: {

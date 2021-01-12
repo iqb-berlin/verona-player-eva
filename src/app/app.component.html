@@ -3,9 +3,9 @@
     <player-component [startData]="playerStartData" (valueChanged)="elementValueChanged($event)"></player-component>
   </mat-card-content>
   <mat-card-actions *ngIf="!isProductionMode">
-    <button mat-raised-button (click)="setNewScript()" matTooltip="Script eingeben">load</button>
+    <button mat-raised-button (click)="loadNewScript()" matTooltip="Script eingeben">load</button>
     <!--<button mat-raised-button (click)="player.tryLeaveNotify()" matTooltip="Zeige Korrekturbedarf">validate</button>-->
-    <button mat-raised-button (click)="responsesSave()" matTooltip="Speichere die aktuellen Antworten">save</button>
-    <button mat-raised-button (click)="responsesRestore()" matTooltip="Stelle alle gespeicherten Antworten wieder her">restore</button>
+    <button mat-raised-button (click)="saveResponses()" matTooltip="Speichere die aktuellen Antworten">save</button>
+    <button mat-raised-button (click)="restoreResponses()" matTooltip="Stelle alle gespeicherten Antworten wieder her">restore</button>
   </mat-card-actions>
 </mat-card>
