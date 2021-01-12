@@ -2,23 +2,12 @@ import {
   AfterViewInit, Component, Inject
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
 
 @Component({
   selector: 'app-root',
-  template: `
-    <mat-card fxLayout="column" class="page">
-      <mat-card-content>
-        <player-component [startData]="playerStartData" (valueChanged)="elementValueChanged($event)"></player-component>
-      </mat-card-content>
-      <mat-card-actions *ngIf="!isProductionMode">
-        <button mat-raised-button (click)="setNewScript()" matTooltip="Script eingeben">load</button>
-        <!--<button mat-raised-button (click)="player.tryLeaveNotify()" matTooltip="Zeige Korrekturbedarf">validate</button>-->
-        <button mat-raised-button (click)="responsesSave()" matTooltip="Speichere die aktuellen Antworten">save</button>
-        <button mat-raised-button (click)="responsesRestore()" matTooltip="Stelle alle gespeicherten Antworten wieder her">restore</button>
-      </mat-card-actions>
-    </mat-card>
-  `,
+  templateUrl: './app.component.html',
   styles: [
     '.page {background-color: white; max-width: 900px; margin-left: auto; margin-right: auto;}'
   ]
@@ -70,23 +59,7 @@ input-text::task12a::1::Teilaufgabe 1.3a (Geo)::Balksisi aoisdfj oaisjioadm aosi
 input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
 `;
 
-  constructor(
-    public dialog: MatDialog
-  ) {}
-
-  static getPlayerMetadata(): Map<string, string> {
-    const myReturn: Map<string, string> = new Map();
-    const metaAttributes = document.querySelector('meta[name="application-name"]').attributes;
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < metaAttributes.length; i++) {
-      if (metaAttributes[i].localName === 'content') {
-        myReturn.set('name', metaAttributes[i].value);
-      } else if (metaAttributes[i].localName.substr(0, 5) === 'data-') {
-        myReturn.set(metaAttributes[i].localName.substr(5), metaAttributes[i].value);
-      }
-    }
-    return myReturn;
-  }
+  constructor(public dialog: MatDialog) {}
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -148,6 +121,19 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     });
   }
 
+  static getPlayerMetadata(): Map<string, string> {
+    const myReturn: Map<string, string> = new Map();
+    const metaAttributes = document.querySelector('meta[name="application-name"]').attributes;
+    for (let i = 0; i < metaAttributes.length; i++) {
+      if (metaAttributes[i].localName === 'content') {
+        myReturn.set('name', metaAttributes[i].value);
+      } else if (metaAttributes[i].localName.substr(0, 5) === 'data-') {
+        myReturn.set(metaAttributes[i].localName.substr(5), metaAttributes[i].value);
+      }
+    }
+    return myReturn;
+  }
+
   setNewScript(): void {
     const dialogRef = this.dialog.open(SourceInputDialogComponent, {
       height: '400px',
@@ -183,7 +169,6 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     } else {
       this.tempResponses = event.detail;
       console.log('player sends data', event.detail);
-      // ;
     }
   }
 

@@ -1,8 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-// eslint-disable-next-line import/extensions
-import './player-component/player-component.js';
-
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +12,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { AppComponent } from './app.component';
 import { SourceInputDialogComponent } from './source-input-dialog/source-input-dialog.component';
+
+import './player-component/player-component';
 
 @NgModule({
   declarations: [
