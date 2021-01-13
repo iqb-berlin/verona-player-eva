@@ -66,26 +66,24 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
       this.playerMetadata = AppComponent.getPlayerMetadata();
       if (this.isProductionMode) {
         window.addEventListener('message', (event: MessageEvent) => {
-          if ('data' in event) {
-            if ('type' in event.data) {
-              switch (event.data.type) {
-                case 'vopStartCommand':
-                  if (event.data.sessionId) {
-                    this.sessionId = event.data.sessionId;
-                    this.playerStartData = event.data;
-                  } else {
-                    console.error('player: (vopStartCommand) no sessionId is given');
-                  }
-                  break;
-                case 'vopPageNavigationCommand':
-                case 'vopGetStateRequest':
-                case 'vopStopCommand':
-                case 'vopContinueCommand':
-                  console.warn(`player: message of type ${event.data.type} not processed yet`);
-                  break;
-                default:
-                  console.warn(`player: got message of unknown type ${event.data.type}`);
-              }
+          if ('data' in event && 'type' in event.data) {
+            switch (event.data.type) {
+              case 'vopStartCommand':
+                if (event.data.sessionId) {
+                  this.sessionId = event.data.sessionId;
+                  this.playerStartData = event.data;
+                } else {
+                  console.error('player: (vopStartCommand) no sessionId is given');
+                }
+                break;
+              case 'vopPageNavigationCommand':
+              case 'vopGetStateRequest':
+              case 'vopStopCommand':
+              case 'vopContinueCommand':
+                console.warn(`player: message of type ${event.data.type} not processed yet`);
+                break;
+              default:
+                console.warn(`player: got message of unknown type ${event.data.type}`);
             }
           }
         });

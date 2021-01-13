@@ -6,7 +6,7 @@ describe('AppComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         AppComponent
-      ],
+      ]
     }).compileComponents();
   }));
 
@@ -16,7 +16,7 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'verona-player-abi2'`, () => {
+  it('should have as title \'verona-player-abi2\'', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app.title).toEqual('verona-player-abi2');
