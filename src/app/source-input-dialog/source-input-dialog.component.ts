@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
     <h1 mat-dialog-title>Eingabe Script</h1>
     <div mat-dialog-content fxLayout="column">
       <mat-form-field>
-        <textarea matInput #sourceData cdkFocusInitial placeholder="Script Text" rows="10"></textarea>
+        <textarea matInput #sourceData placeholder="Script Text" rows="10"></textarea>
       </mat-form-field>
     </div>
     <div mat-dialog-actions>
