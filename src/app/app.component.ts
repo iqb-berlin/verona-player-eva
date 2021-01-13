@@ -21,8 +21,8 @@ export class AppComponent implements AfterViewInit {
     }
   };
 
-  playerMetadata = new Map<string, string>();
-  storedResponses = '{}';
+  playerMetadata = {};
+  storedResponses = '{}'; // TODO string? may refactor
   tempResponses = '{}';
   sessionId = '';
   myScript = `iqb-scripted::1.0
@@ -103,10 +103,10 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
         });
         window.parent.postMessage({
           type: 'vopReadyNotification',
-          apiVersion: this.playerMetadata.get('version'),
-          notSupportedApiFeatures: this.playerMetadata.get('not-supported-api-features'),
-          supportedUnitDefinitionTypes: this.playerMetadata.get('supported-unit-definition-types'),
-          supportedUnitStateDataTypes: this.playerMetadata.get('supported-unit-state-data-types')
+          apiVersion: this.playerMetadata['version'],
+          notSupportedApiFeatures: this.playerMetadata['not-supported-api-features'],
+          supportedUnitDefinitionTypes: this.playerMetadata['supported-unit-definition-types'],
+          supportedUnitStateDataTypes: this.playerMetadata['supported-unit-state-data-types']
         }, '*');
       } else {
         this.playerStartData = {
@@ -119,17 +119,17 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
     });
   }
 
-  static getPlayerMetadata(): Map<string, string> {
-    const myReturn: Map<string, string> = new Map();
+  static getPlayerMetadata(): object {
+    const playerMetadata: object = {};
     const metaAttributes = document.querySelector('meta[name="application-name"]').attributes;
     for (let i = 0; i < metaAttributes.length; i++) {
       if (metaAttributes[i].localName === 'content') {
-        myReturn.set('name', metaAttributes[i].value);
+        playerMetadata['name'] = metaAttributes[i].value;
       } else if (metaAttributes[i].localName.substr(0, 5) === 'data-') {
-        myReturn.set(metaAttributes[i].localName.substr(5), metaAttributes[i].value);
+        playerMetadata[metaAttributes[i].localName.substr(5)] = metaAttributes[i].value;
       }
     }
-    return myReturn;
+    return playerMetadata;
   }
 
   loadNewScript(): void {
@@ -161,7 +161,7 @@ input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::2
           dataParts: {
             allResponses: event.detail
           },
-          unitStateType: this.playerMetadata.get('supported-unit-state-data-types')
+          unitStateType: this.playerMetadata['supported-unit-state-data-types']
         }
       }, '*');
     } else {
