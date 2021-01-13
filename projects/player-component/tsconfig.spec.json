@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/player-component-spec",
+    "types": [
+      "jasmine"
+    ]
+  },
+  "files": [
+    "./src/test.ts",
+    "./src/polyfills.ts",
+    "karma.conf.js"
+  ],
+  "include": [
+    "**/*.spec.ts",
+    "**/*.d.ts"
+  ]
+}
