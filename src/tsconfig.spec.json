@@ -8,8 +8,7 @@
   },
   "files": [
     "test.ts",
-    "polyfills.ts",
-    "karma.conf.js"
+    "polyfills.ts"
   ],
   "include": [
     "**/*.spec.ts",
