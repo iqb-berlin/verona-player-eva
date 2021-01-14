@@ -14,7 +14,7 @@
     "build": "ng build --prod --output-hashing=none",
     "postbuild": "node node_modules/iqb-dev-components/src/distpacker.js dist/$npm_package_name",
     "buildplayer": "ng build player-component --prod --output-hashing=none",
-    "postbuildplayer": "node node_modules/iqb-dev-components/src/js_css_packer.js dist/player-component",
+    "postbuildplayer": "node node_modules/iqb-dev-components/src/js_css_packer.js dist player-component",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -47,7 +47,7 @@
     "@types/jasmine": "^3.6.2",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "^12.19.11",
-    "iqb-dev-components": "^1.3.4",
+    "iqb-dev-components": "^1.3.7",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~5.1.1",
