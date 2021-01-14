@@ -8,38 +8,47 @@ import { UIElement } from './classes/UIElement';
 })
 export class DataService {
   rootBlock = new UIBlock();
-  scriptVersionMajor = 0;
-  scriptVersionMinor = 0;
+  scriptVersionMajor = null;
+  scriptVersionMinor = null;
 
   setElements(scriptLines: string[], oldResponses: Record<string, string>): void {
-    if (scriptLines.length > 1) {
-      const scriptKeyword = DataService.getKeyword(scriptLines[0]);
-      if (scriptKeyword === 'iqb-scripted') {
-        const versionString = DataService.getParameter(scriptLines[0], 1);
-        if (versionString) {
-          const versionNumbers = versionString.match(/\d+/g);
-          let versionNumberTry = Number(versionNumbers[1]);
-          if (!Number.isNaN(versionNumberTry)) {
-            this.scriptVersionMinor = versionNumberTry;
-            versionNumberTry = Number(versionNumbers[0]);
-            if (!Number.isNaN(versionNumberTry)) {
-              this.scriptVersionMajor = versionNumberTry;
-            }
-          }
-        }
-      }
-    }
-    if (this.scriptVersionMajor === 0) {
+    const errorMessage = this.checkScriptHeader(scriptLines[0]);
+    if (errorMessage !== '') {
       this.rootBlock = new UIBlock();
-      const ed = new UIElement('SCRIPT_ERROR', FieldType.SCRIPT_ERROR);
-      ed.properties.set(PropertyKey.TEXT, 'Scriptfehler: Scripttyp oder -version nicht erkannt (erste Zeile)');
-      this.rootBlock.elements.push(ed);
+      const errorElement = new UIElement('SCRIPT_ERROR', FieldType.SCRIPT_ERROR);
+      errorElement.properties.set(PropertyKey.TEXT, errorMessage);
+      this.rootBlock.elements.push(errorElement);
     } else {
       scriptLines.splice(0, 1);
       this.rootBlock = DataService.parseScript(scriptLines, oldResponses, '', 0,
         this.scriptVersionMajor, this.scriptVersionMinor);
       this.rootBlock.check(oldResponses);
     }
+  }
+
+  private checkScriptHeader(headerLine: string): string {
+    const scriptKeyword = DataService.getKeyword(headerLine);
+    if (scriptKeyword === '') {
+      return 'Scriptfehler: Kein Keyword gefunden!';
+    }
+    const versionString = DataService.getParameter(headerLine, 1);
+    if (!versionString) {
+      return 'Scriptfehler: Kein Version-Parameter gefunden!';
+    }
+    const versionNumbers = versionString.match(/\d+/g);
+    if (!versionNumbers || versionNumbers.length < 2) {
+      return 'Scriptfehler: Version-Parameter Fehlerhaft!';
+    }
+    this.scriptVersionMajor = Number(versionNumbers[0]);
+    this.scriptVersionMinor = Number(versionNumbers[1]);
+    return this.checkVersion();
+  }
+
+  public checkVersion(): string {
+    if (this.scriptVersionMajor === 0) {
+      return 'Scriptfehler: Scriptversion < 1.0 nicht unterstützt (erste Zeile)';
+    }
+    return '';
   }
 
   private static getKeyword(line: string): string {
