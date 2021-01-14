@@ -51,9 +51,13 @@ export class DataService {
     return '';
   }
 
+  /**
+   * Return first word of the line or empty string.
+   * @param line to check
+   */
   private static getKeyword(line: string): string {
     const keywordList = line.match(/[a-z-]+/);
-    return (keywordList && keywordList.length > 0) ? keywordList[0] : '';
+    return keywordList ? keywordList[0] : '';
   }
 
   private static getParameter(line: string, pos: number): string {
