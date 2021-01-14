@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { DataService } from './data.service';
-import { UIElement } from "./classes/UIElement";
-import { PropertyKey } from "./classes/interfaces";
+import { UIElement } from './classes/UIElement';
+import { PropertyKey } from './classes/interfaces';
 
 describe('DataService', () => {
   let dataService: DataService;

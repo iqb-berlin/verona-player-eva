@@ -311,18 +311,18 @@ export class DataService {
               myReturn.elements.push(b);
             }
           } else {
-            const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
+            const errorElement = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
             localIdCounter += 1;
-            ed.properties.set(PropertyKey.TEXT,
+            errorElement.properties.set(PropertyKey.TEXT,
               `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
-            myReturn.elements.push(ed);
+            myReturn.elements.push(errorElement);
           }
         } else {
-          const ed = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
+          const errorElement = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
           localIdCounter += 1;
-          ed.properties.set(PropertyKey.TEXT,
+          errorElement.properties.set(PropertyKey.TEXT,
             `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
-          myReturn.elements.push(ed);
+          myReturn.elements.push(errorElement);
         }
       } else { // empty line in form
         myReturn.elements.push(new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.TEXT));
