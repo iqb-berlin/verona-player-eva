@@ -8,8 +8,8 @@ import { DataService } from './data.service';
 @Component({
   template: `
     <p>player-component alive!</p>
-    <form  [formGroup]="form">
-      <div *ngFor="let e of ds.rootBlock.elements">
+    <form [formGroup]="form">
+      <div *ngFor="let e of dataService.rootBlock.elements">
         <player-sub-form [elementData]="e" (elementDataChange)="formValueChanged()" [parentForm]="form">
         </player-sub-form>
       </div>
@@ -26,6 +26,10 @@ export class PlayerComponent {
     }
   };
 
+  form = new FormGroup({});
+
+  constructor(public dataService: DataService) {}
+
   get startData(): StartData {
     return this._startData;
   }
@@ -36,11 +40,6 @@ export class PlayerComponent {
   }
 
   // @Output() ready = new EventEmitter();
-  form = new FormGroup({});
-
-  constructor(
-    public ds: DataService
-  ) {}
 
   private setStartData(startData: StartData): void {
     this._startData = startData;
@@ -53,7 +52,7 @@ export class PlayerComponent {
           storedResponses = JSON.parse(storedResponsesRaw.allResponses);
         }
       }
-      this.ds.setElements(startData.unitDefinition.split('\n'), storedResponses);
+      this.dataService.setElements(startData.unitDefinition.split('\n'), storedResponses);
     } else {
       console.warn('player: (setStartData) no unitDefinition is given');
     }
@@ -64,8 +63,8 @@ export class PlayerComponent {
   }
 
   formValueChanged(): void {
-    const allValues = this.ds.getValues();
-    this.ds.rootBlock.check(allValues);
+    const allValues = this.dataService.getValues();
+    this.dataService.rootBlock.check(allValues);
     this.valueChanged.emit(JSON.stringify(allValues));
   }
 }
