@@ -35,8 +35,8 @@ export class PlayerComponent {
   }
 
   @Input()
-  set startData(val: StartData) {
-    this.setStartData(val);
+  set startData(data: StartData) {
+    this.setStartData(data);
   }
 
   // @Output() ready = new EventEmitter();
