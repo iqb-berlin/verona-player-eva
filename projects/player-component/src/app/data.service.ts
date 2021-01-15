@@ -8,11 +8,9 @@ import { UIElement } from './classes/UIElement';
 })
 export class DataService {
   rootBlock = new UIBlock();
-  scriptVersionMajor = null;
-  scriptVersionMinor = null;
 
   setElements(scriptLines: string[], oldResponses: Record<string, string>): void {
-    const errorMessage = this.checkScriptHeader(scriptLines[0]);
+    const errorMessage = DataService.checkScriptHeader(scriptLines[0]);
     if (errorMessage !== '') {
       this.rootBlock = new UIBlock();
       const errorElement = new UIElement('SCRIPT_ERROR', FieldType.SCRIPT_ERROR);
@@ -20,13 +18,12 @@ export class DataService {
       this.rootBlock.elements.push(errorElement);
     } else {
       scriptLines.splice(0, 1);
-      this.rootBlock = DataService.parseScript(scriptLines, oldResponses, '', 0,
-        this.scriptVersionMajor, this.scriptVersionMinor);
+      this.rootBlock = DataService.parseScript(scriptLines, oldResponses, '', 0);
       this.rootBlock.check(oldResponses);
     }
   }
 
-  private checkScriptHeader(headerLine: string): string {
+  private static checkScriptHeader(headerLine: string): string {
     const scriptKeyword = DataService.getKeyword(headerLine);
     if (scriptKeyword === '') {
       return 'Scriptfehler: Kein Keyword gefunden!';
@@ -39,13 +36,11 @@ export class DataService {
     if (!versionNumbers || versionNumbers.length < 2) {
       return 'Scriptfehler: Version-Parameter Fehlerhaft!';
     }
-    this.scriptVersionMajor = Number(versionNumbers[0]);
-    this.scriptVersionMinor = Number(versionNumbers[1]);
-    return this.checkVersion();
+    return DataService.checkVersion(Number(versionNumbers[0]), Number(versionNumbers[1]));
   }
 
-  public checkVersion(): string {
-    if (this.scriptVersionMajor === 0) {
+  private static checkVersion(majorVersion: number, minorVersion: number): string {
+    if (majorVersion === 0) {
       return 'Scriptfehler: Scriptversion < 1.0 nicht unterstützt (erste Zeile)';
     }
     return '';
@@ -75,8 +70,7 @@ export class DataService {
   }
 
   private static readUIElement(keyword: string, line: string,
-                               idSuffix: string, lineNumber: number,
-                               scriptVersionMajor: number, scriptVersionMinor: number): UIElement {
+                               idSuffix: string, lineNumber: number): UIElement {
     let ed: UIElement;
     const parameter1 = this.getParameter(line, 1);
     const parameter2 = this.getParameter(line, 2);
@@ -184,8 +178,7 @@ export class DataService {
   }
 
   private static parseScript(scriptLines: string[], oldResponses: Record<string, string>,
-                             idSuffix: string, lineNumberOffset: number,
-                             scriptVersionMajor: number, scriptVersionMinor: number): UIBlock {
+                             idSuffix: string, lineNumberOffset: number): UIBlock {
     const elementKeys = ['text', 'header', 'title', 'hr', 'html',
       'input-text', 'input-number', 'checkbox', 'multiple-choice', 'drop-down'];
     const myReturn = new UIBlock();
@@ -205,8 +198,8 @@ export class DataService {
         if (keyword) {
           if (elementKeys.includes(keyword)) {
             const newElement = this.readUIElement(
-              keyword, line, `${idSuffix}_${localIdCounter.toString()}`, lineNumberOffset + localLineNumber + 1,
-              scriptVersionMajor, scriptVersionMinor
+              keyword, line, `${idSuffix}_${localIdCounter.toString()}`,
+              lineNumberOffset + localLineNumber + 1
             );
             if (oldResponses[newElement.id]) {
               newElement.value = oldResponses[newElement.id];
@@ -236,8 +229,8 @@ export class DataService {
             }
             if (blockLines.length > 0) {
               const tmpBlock = this.parseScript(blockLines, {},
-                `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset,
-                scriptVersionMajor, scriptVersionMinor);
+                `${idSuffix}_${localIdCounter.toString()}`,
+                localLineNumber + lineNumberOffset);
               localIdCounter += 1;
               b.templateElements = tmpBlock.elements;
               if (oldResponses[b.id]) {
@@ -296,14 +289,12 @@ export class DataService {
             }
             if (trueBlockLines.length > 0) {
               let tmpBlock = this.parseScript(trueBlockLines, {},
-                `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset,
-                scriptVersionMajor, scriptVersionMinor);
+                `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
               localIdCounter += 1;
               b.trueElements = tmpBlock.elements;
               if (falseBlockLines.length > 0) {
                 tmpBlock = this.parseScript(falseBlockLines, {},
-                  `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset,
-                  scriptVersionMajor, scriptVersionMinor);
+                  `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
                 localIdCounter += 1;
                 b.falseElements = tmpBlock.elements;
               }
