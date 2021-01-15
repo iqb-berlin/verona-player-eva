@@ -36,6 +36,7 @@ describe('DataService', () => {
 
     dataService.setElements(['iqb-scripted::0.1'], {});
     errorText = (dataService.rootBlock.elements[0] as UIElement).properties.get(PropertyKey.TEXT);
-    expect(errorText).toEqual('Scriptfehler: Scriptversion < 1.0 nicht unterstützt (erste Zeile)');
+    expect(errorText).toEqual('Scriptfehler: Scriptversion nicht unterstützt (erste Zeile)!' +
+                              'Unterstützte Versionen: 1');
   });
 });

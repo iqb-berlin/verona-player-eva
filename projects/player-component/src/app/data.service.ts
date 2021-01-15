@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { IfThenElseBlock, RepeatBlock, UIBlock } from './classes/UIBlock';
 import { FieldType, PropertyKey } from './classes/interfaces';
 import { UIElement } from './classes/UIElement';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -40,8 +41,10 @@ export class DataService {
   }
 
   private static checkVersion(majorVersion: number, minorVersion: number): string {
-    if (majorVersion === 0) {
-      return 'Scriptfehler: Scriptversion < 1.0 nicht unterstützt (erste Zeile)';
+    const supportedMajorVersions = environment.supportedScriptMajorVersions;
+    if (!supportedMajorVersions.includes(majorVersion)) {
+      return `Scriptfehler: Scriptversion nicht unterstützt (erste Zeile)!\
+Unterstützte Versionen: ${supportedMajorVersions}`;
     }
     return '';
   }
