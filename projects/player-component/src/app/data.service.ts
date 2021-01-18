@@ -191,12 +191,7 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
     while (localLineNumber < scriptLines.length) {
       let line = scriptLines[localLineNumber];
       localLineNumber += 1;
-      if (line) {
-        const notEmptyCheck = /\S+/g.exec(line);
-        if (!notEmptyCheck) {
-          line = '';
-        }
-      }
+      line = line.trim();
       if (line) {
         const keyword = this.getKeyword(line);
         if (keyword) {
