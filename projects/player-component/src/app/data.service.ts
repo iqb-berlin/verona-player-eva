@@ -74,45 +74,45 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
 
   private static readUIElement(keyword: string, line: string,
                                idSuffix: string, lineNumber: number): UIElement {
-    let ed: UIElement;
+    let uiElement: UIElement;
     const parameter1 = this.getParameter(line, 1);
     const parameter2 = this.getParameter(line, 2);
     const helpText = this.getHelpText(line);
     switch (keyword) {
       case 'header':
-        ed = new UIElement(`id${idSuffix}`, FieldType.HEADER);
+        uiElement = new UIElement(`id${idSuffix}`, FieldType.HEADER);
         if (parameter1) {
-          ed.properties.set(PropertyKey.TEXT, parameter1);
+          uiElement.properties.set(PropertyKey.TEXT, parameter1);
         }
         if (helpText) {
-          ed.helpText = helpText;
+          uiElement.helpText = helpText;
         }
         break;
       case 'text':
-        ed = new UIElement(`id${idSuffix}`, FieldType.TEXT);
+        uiElement = new UIElement(`id${idSuffix}`, FieldType.TEXT);
         if (parameter1) {
-          ed.properties.set(PropertyKey.TEXT, parameter1);
+          uiElement.properties.set(PropertyKey.TEXT, parameter1);
         }
         if (helpText) {
-          ed.helpText = helpText;
+          uiElement.helpText = helpText;
         }
         break;
       case 'title':
-        ed = new UIElement(`id${idSuffix}`, FieldType.TITLE);
+        uiElement = new UIElement(`id${idSuffix}`, FieldType.TITLE);
         if (parameter1) {
-          ed.properties.set(PropertyKey.TEXT, parameter1);
+          uiElement.properties.set(PropertyKey.TEXT, parameter1);
         }
         if (helpText) {
-          ed.helpText = helpText;
+          uiElement.helpText = helpText;
         }
         break;
       case 'html':
-        ed = new UIElement(`id${idSuffix}`, FieldType.HTML);
+        uiElement = new UIElement(`id${idSuffix}`, FieldType.HTML);
         if (parameter1) {
-          ed.properties.set(PropertyKey.TEXT, parameter1);
+          uiElement.properties.set(PropertyKey.TEXT, parameter1);
         }
         if (helpText) {
-          ed.helpText = helpText;
+          uiElement.helpText = helpText;
         }
         break;
       case 'input-text':
@@ -122,62 +122,63 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
       case 'drop-down':
         if (parameter1) {
           if (keyword === 'input-text') {
-            ed = new UIElement(parameter1, FieldType.INPUT_TEXT);
+            uiElement = new UIElement(parameter1, FieldType.INPUT_TEXT);
           } else if (keyword === 'input-number') {
-            ed = new UIElement(parameter1, FieldType.INPUT_NUMBER);
+            uiElement = new UIElement(parameter1, FieldType.INPUT_NUMBER);
           } else if (keyword === 'checkbox') {
-            ed = new UIElement(parameter1, FieldType.CHECKBOX);
+            uiElement = new UIElement(parameter1, FieldType.CHECKBOX);
           } else if (keyword === 'multiple-choice') {
-            ed = new UIElement(parameter1, FieldType.MULTIPLE_CHOICE);
+            uiElement = new UIElement(parameter1, FieldType.MULTIPLE_CHOICE);
           } else if (keyword === 'drop-down') {
-            ed = new UIElement(parameter1, FieldType.DROP_DOWN);
+            uiElement = new UIElement(parameter1, FieldType.DROP_DOWN);
           }
           if (parameter2) {
-            (ed as UIElement).required = parameter2 === '1';
+            (uiElement as UIElement).required = parameter2 === '1';
           }
           const parameter3 = this.getParameter(line, 3);
           if (parameter3) {
-            (ed as UIElement).properties.set(PropertyKey.TEXT, parameter3);
+            (uiElement as UIElement).properties.set(PropertyKey.TEXT, parameter3);
           }
           const parameter4 = this.getParameter(line, 4);
           if (parameter4) {
-            (ed as UIElement).properties.set(PropertyKey.TEXT2, parameter4);
+            (uiElement as UIElement).properties.set(PropertyKey.TEXT2, parameter4);
           }
           if (keyword === 'input-number' || keyword === 'input-text') {
             const parameter5 = this.getParameter(line, 5);
             if (parameter5) {
               if (keyword === 'input-text') {
-                (ed as UIElement).properties.set(PropertyKey.LINES_NUMBER, parameter5);
+                (uiElement as UIElement).properties.set(PropertyKey.LINES_NUMBER, parameter5);
               } else {
-                (ed as UIElement).properties.set(PropertyKey.MIN_VALUE, parameter5);
+                (uiElement as UIElement).properties.set(PropertyKey.MIN_VALUE, parameter5);
               }
             }
             const parameter6 = this.getParameter(line, 6);
             if (parameter6) {
               if (keyword === 'input-text') {
-                (ed as UIElement).properties.set(PropertyKey.MAX_LENGTH, parameter6);
+                (uiElement as UIElement).properties.set(PropertyKey.MAX_LENGTH, parameter6);
               } else {
-                (ed as UIElement).properties.set(PropertyKey.MAX_VALUE, parameter6);
+                (uiElement as UIElement).properties.set(PropertyKey.MAX_VALUE, parameter6);
               }
             }
           }
           if (helpText) {
-            (ed as UIElement).helpText = helpText;
+            (uiElement as UIElement).helpText = helpText;
           }
         } else {
-          ed = new UIElement(`id${idSuffix}`, FieldType.SCRIPT_ERROR);
-          ed.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${lineNumber.toString()}: Variablenname fehlt`);
+          uiElement = new UIElement(`id${idSuffix}`, FieldType.SCRIPT_ERROR);
+          uiElement.properties.set(PropertyKey.TEXT,
+            `Scriptfehler Zeile ${lineNumber.toString()}: Variablenname fehlt`);
         }
         break;
       case 'hr':
-        ed = new UIElement(`id${idSuffix}`, FieldType.HR);
+        uiElement = new UIElement(`id${idSuffix}`, FieldType.HR);
         break;
       default:
-        ed = new UIElement(`id${idSuffix}`, FieldType.SCRIPT_ERROR);
-        ed.properties.set(PropertyKey.TEXT,
+        uiElement = new UIElement(`id${idSuffix}`, FieldType.SCRIPT_ERROR);
+        uiElement.properties.set(PropertyKey.TEXT,
           `Scriptfehler Zeile ${lineNumber.toString()}: ungültiges Schlüsselwort ${keyword}`);
     }
-    return ed;
+    return uiElement;
   }
 
   private static parseScript(scriptLines: string[], oldResponses: Record<string, string>,
