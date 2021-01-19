@@ -185,7 +185,7 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
                              idSuffix: string, lineNumberOffset: number): UIBlock {
     const elementKeys = ['text', 'header', 'title', 'hr', 'html',
       'input-text', 'input-number', 'checkbox', 'multiple-choice', 'drop-down'];
-    const myReturn = new UIBlock();
+    const newUIBlock = new UIBlock();
     let localLineNumber = 0;
     let localIdCounter = 1;
     while (localLineNumber < scriptLines.length) {
@@ -196,14 +196,8 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
         const keyword = this.getKeyword(line);
         if (keyword) {
           if (elementKeys.includes(keyword)) {
-            const newElement = this.readUIElement(
-              keyword, line, `${idSuffix}_${localIdCounter.toString()}`,
-              lineNumberOffset + localLineNumber + 1
-            );
-            if (oldResponses[newElement.id]) {
-              newElement.value = oldResponses[newElement.id];
-            }
-            myReturn.elements.push(newElement);
+            this.addUIElement(newUIBlock, `${idSuffix}_${localIdCounter.toString()}`, keyword,
+              line, lineNumberOffset + localLineNumber + 1, oldResponses);
             localIdCounter += 1;
           } else if (keyword === 'repeat-start') {
             const parameter1 = this.getParameter(line, 1);
@@ -239,10 +233,10 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
                   b.setSubBlockNumber(valueNumberTry, oldResponses);
                 }
               }
-              myReturn.elements.push(b);
+              newUIBlock.elements.push(b);
             }
           } else if (keyword === 'if-start') {
-            const b = new IfThenElseBlock(`${idSuffix}_${localIdCounter.toString()}`,
+            const ifThenElseBlock = new IfThenElseBlock(`${idSuffix}_${localIdCounter.toString()}`,
               this.getParameter(line, 1),
               this.getParameter(line, 2));
             localIdCounter += 1;
@@ -290,36 +284,50 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
               let tmpBlock = this.parseScript(trueBlockLines, {},
                 `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
               localIdCounter += 1;
-              b.trueElements = tmpBlock.elements;
+              ifThenElseBlock.trueElements = tmpBlock.elements;
               if (falseBlockLines.length > 0) {
                 tmpBlock = this.parseScript(falseBlockLines, {},
                   `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
                 localIdCounter += 1;
-                b.falseElements = tmpBlock.elements;
+                ifThenElseBlock.falseElements = tmpBlock.elements;
               }
               // todo oldResponses
-              myReturn.elements.push(b);
+              newUIBlock.elements.push(ifThenElseBlock);
             }
           } else {
-            const errorElement = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
+            this.addErrorElement(newUIBlock, `${idSuffix}_${localIdCounter.toString()}`,
+              (lineNumberOffset + localLineNumber).toString());
             localIdCounter += 1;
-            errorElement.properties.set(PropertyKey.TEXT,
-              `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
-            myReturn.elements.push(errorElement);
           }
         } else {
-          const errorElement = new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.SCRIPT_ERROR);
+          this.addErrorElement(newUIBlock, `${idSuffix}_${localIdCounter.toString()}`,
+            (lineNumberOffset + localLineNumber).toString());
           localIdCounter += 1;
-          errorElement.properties.set(PropertyKey.TEXT,
-            `Scriptfehler Zeile ${(lineNumberOffset + localLineNumber).toString()}: Schlüssel nicht erkannt`);
-          myReturn.elements.push(errorElement);
         }
-      } else { // empty line in form
-        myReturn.elements.push(new UIElement(`${idSuffix}_${localIdCounter.toString()}`, FieldType.TEXT));
+      } else {
+        this.addEmptyLineElement(newUIBlock, `${idSuffix}_${localIdCounter.toString()}`);
         localIdCounter += 1;
       }
     }
-    return myReturn;
+    return newUIBlock;
+  }
+
+  private static addUIElement(newUIBlock, id, keyword, line, lineNumber, oldResponses) {
+    const newElement = this.readUIElement(keyword, line, id, lineNumber);
+    if (oldResponses[newElement.id]) {
+      newElement.value = oldResponses[newElement.id];
+    }
+    newUIBlock.elements.push(newElement);
+  }
+
+  private static addErrorElement(newUIBlock, id, lineNumber) {
+    const errorElement = new UIElement(id, FieldType.SCRIPT_ERROR);
+    errorElement.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${lineNumber}: Schlüssel nicht erkannt`);
+    newUIBlock.elements.push(errorElement);
+  }
+
+  private static addEmptyLineElement(newUIBlock, id) {
+    newUIBlock.elements.push(new UIElement(id, FieldType.TEXT));
   }
 
   private static getBlockValues(b: UIBlock): Record<string, string> {
