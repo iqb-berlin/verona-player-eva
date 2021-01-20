@@ -9,8 +9,9 @@ import { DataService } from './data.service';
   template: `
     <p>player-component alive!</p>
     <form [formGroup]="form">
-      <div *ngFor="let e of dataService.rootBlock.elements">
-        <player-sub-form [elementData]="e" (elementDataChange)="formValueChanged()" [parentForm]="form">
+      <div *ngFor="let element of dataService.rootBlock.elements">
+        <player-sub-form [elementData]="element" (elementDataChange)="formValueChanged()"
+                         [parentForm]="form">
         </player-sub-form>
       </div>
     </form>
