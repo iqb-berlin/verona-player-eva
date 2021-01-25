@@ -63,10 +63,7 @@
     "extends": "@iqb/eslint-config",
     "parserOptions": {
       "project": [
-        "./projects/player-component/tsconfig.app.json",
-        "./projects/player-component/tsconfig.spec.json",
-        "./src/tsconfig.app.json",
-        "./src/tsconfig.spec.json"
+        "./tsconfig.json"
       ]
     }
   }
