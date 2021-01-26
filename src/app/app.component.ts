@@ -26,37 +26,33 @@ export class AppComponent implements AfterViewInit {
   tempResponses = '{}';
   sessionId = '';
   myScript = `iqb-scripted::1.0
-html::And now <strong>this text here is bolded</strong>
-html::And hyperlinks such as <a href=”https://www.iqb.hu-berlin.de”>this one to the IQB website</a>
-header::Abschnitt 223
-checkbox::soso::1::vorher nee aber doch::nachher hmpf
-multiple-choice::mc433::0::label für MC::Apfel##Birne##Banane##Orange
-multiple-choice::mc4337::1::::Möhre##Rübe##Kohl
-drop-down::mc4344::1::label für Dropdown::Apfel##Birne##Banane##Orange
-if-start::mc4344::1
-  text::Du hast "Apfel" gewählt.
-  if-start::mc4337::1
-    text::Du hast auch noch "Möhre" gewählt.
-  if-end
-if-else
-  text::Du hast NICHT "Apfel" gewählt.
-if-end
+title::Testscript Title
+header::Abschnitt 1 Basic Elements
+header
+text::Standard Text Element
+html::HTML Ele with <strong>strong</strong> text and hyperlink: <a href=”https://www.iqb.hu-berlin.de”>IQB website</a>
 hr
-
-title::Titel
-repeat-start::examineecount::Wie viele Prüflinge gibt es?::Angaben zu Prüfling::20??Sie können Angaben zu maximal 20 Prüflingen eintragen. Sollten sich im Kurs mehr als 20 Prüflinge befinden, ist eine Auswahl vorzunehmen. Diese Auswahl sollte so erfolgen, dass ein möglichst breites Leistungsspektrum abgebildet wird. Vermieden werden sollte eine selektive Berücksichtigung bzw. Nichtberücksichtigung bestimmter Gruppen (z. B. besonders leistungsschwache oder leistungsstarke Prüflinge, Schülerinnen und Schüler mit nichtdeutscher Herkunftssprache).
-    input-number::task1::1::Teilaufgabe 1::::0::10
-    if-start::mc4337::1
-      input-number::task2::1::Teilaufgabe Möhre::::0::10
-    if-else
-      input-number::task3::1::Teilaufgabe nicht Möhre::::0::10
-    if-end
+rem::Kommentar. Soll nicht erscheinen!
+header::Abschnitt 2 Eingabeelemente
+input-text::text_var1::1::Text eingeben::Text nach Feld::0::10
+input-number::num_var1::1::Nummer eingeben::Text nach Feld::0::10
+header::Abschnitt 3 Auswahlelemente
+checkbox::check_var1::0::Bitte ankreuzen
+if-start::check_var1::true
+  text::Checked
+if-end
+multiple-choice::mc_var1::1::Multiple Choice Feld: ::Choice1##Choice2##Choice3
+if-start::mc_var1::1
+  text::Choice 1 chosen
+if-else
+  text::NOT Choice1
+if-end
+repeat-start::examineecount::Wie viele Prüflinge gibt es?::Angaben zu Prüfling::20
+  text::Repeat Inhalt
+  if-start::check_var1::true
+    text::Checked
+  if-end
 repeat-end
-text::so was geht doch ö
-
-input-number::task12ahmfA::1::Teilaufgabe 1.2a (Analysis)::::2::11
-input-text::task12a::1::Teilaufgabe 1.3a (Geo)::Balksisi aoisdfj oaisjioadm aosicj aoisjaoisjad oasijd
-input-text::note::0::Weitere Kommentare zu den Prüfungsaufgaben (optional)::::20??Abschließend haben Sie an dieser Stelle die Möglichkeit, zusätzliche Hinweise und Kommentare zu den Prüfungsaufgaben und Erwartungshorizonten festzuhalten.
 `;
 
   constructor(public dialog: MatDialog) {}
