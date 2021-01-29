@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { PropertyKey } from '../../classes/interfaces';
 import { ElementComponent } from '../element.component';
-import { UIElement } from '../../classes/UIElement';
+import { InputElement } from '../../classes/UIElement';
 
 @Component({
   selector: 'player-select',
@@ -45,7 +45,7 @@ export class SelectComponent extends ElementComponent implements OnInit, OnDestr
   valueChangeSubscription: Subscription = null;
 
   ngOnInit(): void {
-    if (this.elementData instanceof UIElement) {
+    if (this.elementData instanceof InputElement) {
       this.label = this.elementData.properties.get(PropertyKey.TEXT);
       const optionsStr = this.elementData.properties.get(PropertyKey.TEXT2);
       if (optionsStr) {

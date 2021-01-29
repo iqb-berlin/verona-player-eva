@@ -1,15 +1,36 @@
 import { Injectable } from '@angular/core';
 import { IfThenElseBlock, RepeatBlock, UIBlock } from './classes/UIBlock';
 import { FieldType, PropertyKey } from './classes/interfaces';
-import { UIElement } from './classes/UIElement';
+import {
+  CheckboxElement, ErrorElement,
+  MultiChoiceElement,
+  NumberInputElement,
+  TextElement,
+  TextInputElement,
+  UIElement
+} from './classes/UIElement';
 import { environment } from '../environments/environment';
+
+type IfStackObjectKey = 'isTrueBranch' | 'uiBlock';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
   rootBlock = new UIBlock();
+  private scriptLines: string[] = [];
+  private _idCounter = 0;
 
+  private ifNestingStack: Record<IfStackObjectKey, UIBlock | boolean>[] = [];
+  private repeatNestingStack: RepeatBlock[] = [];
+  private isLatestElementIfBlock = false;
+
+  get idCounter(): string {
+    this._idCounter += 1;
+    return this._idCounter.toString();
+  }
+
+  // TODO oldResponses
   setElements(scriptLines: string[], oldResponses: Record<string, string>): void {
     const errorMessage = DataService.checkScriptHeader(scriptLines[0]);
     if (errorMessage !== '') {
@@ -19,7 +40,13 @@ export class DataService {
       this.rootBlock.elements.push(errorElement);
     } else {
       scriptLines.splice(0, 1);
-      this.rootBlock = DataService.parseScript(scriptLines, oldResponses, '', 0);
+      this.scriptLines = scriptLines;
+      // const testBlock = DataService.parseScript(scriptLines, oldResponses, '', 0);
+      // console.log('testBlock', testBlock);
+      // this.rootBlock = testBlock;
+      // TODO basic error check: same amount of start and ends for example
+      this.parseScriptLines(oldResponses);
+      console.log('rootBlock', this.rootBlock);
       this.rootBlock.check(oldResponses);
     }
   }
@@ -72,262 +99,190 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
     return null;
   }
 
-  private static readUIElement(keyword: string, line: string,
-                               idSuffix: string, lineNumber: number): UIElement {
-    let uiElement: UIElement;
-    const parameter1 = this.getParameter(line, 1);
-    const parameter2 = this.getParameter(line, 2);
-    const helpText = this.getHelpText(line);
-    switch (keyword) {
-      case 'header':
-        uiElement = new UIElement(`id${idSuffix}`, FieldType.HEADER);
-        if (parameter1) {
-          uiElement.properties.set(PropertyKey.TEXT, parameter1);
-        }
-        if (helpText) {
-          uiElement.helpText = helpText;
-        }
-        break;
-      case 'text':
-        uiElement = new UIElement(`id${idSuffix}`, FieldType.TEXT);
-        if (parameter1) {
-          uiElement.properties.set(PropertyKey.TEXT, parameter1);
-        }
-        if (helpText) {
-          uiElement.helpText = helpText;
-        }
-        break;
-      case 'title':
-        uiElement = new UIElement(`id${idSuffix}`, FieldType.TITLE);
-        if (parameter1) {
-          uiElement.properties.set(PropertyKey.TEXT, parameter1);
-        }
-        if (helpText) {
-          uiElement.helpText = helpText;
-        }
-        break;
-      case 'html':
-        uiElement = new UIElement(`id${idSuffix}`, FieldType.HTML);
-        if (parameter1) {
-          uiElement.properties.set(PropertyKey.TEXT, parameter1);
-        }
-        if (helpText) {
-          uiElement.helpText = helpText;
-        }
-        break;
-      case 'input-text':
-      case 'input-number':
-      case 'checkbox':
-      case 'multiple-choice':
-      case 'drop-down':
-        if (parameter1) {
-          if (keyword === 'input-text') {
-            uiElement = new UIElement(parameter1, FieldType.INPUT_TEXT);
-          } else if (keyword === 'input-number') {
-            uiElement = new UIElement(parameter1, FieldType.INPUT_NUMBER);
-          } else if (keyword === 'checkbox') {
-            uiElement = new UIElement(parameter1, FieldType.CHECKBOX);
-          } else if (keyword === 'multiple-choice') {
-            uiElement = new UIElement(parameter1, FieldType.MULTIPLE_CHOICE);
-          } else if (keyword === 'drop-down') {
-            uiElement = new UIElement(parameter1, FieldType.DROP_DOWN);
-          }
-          if (parameter2) {
-            (uiElement as UIElement).required = parameter2 === '1';
-          }
-          const parameter3 = this.getParameter(line, 3);
-          if (parameter3) {
-            (uiElement as UIElement).properties.set(PropertyKey.TEXT, parameter3);
-          }
-          const parameter4 = this.getParameter(line, 4);
-          if (parameter4) {
-            (uiElement as UIElement).properties.set(PropertyKey.TEXT2, parameter4);
-          }
-          if (keyword === 'input-number' || keyword === 'input-text') {
-            const parameter5 = this.getParameter(line, 5);
-            if (parameter5) {
-              if (keyword === 'input-text') {
-                (uiElement as UIElement).properties.set(PropertyKey.LINES_NUMBER, parameter5);
-              } else {
-                (uiElement as UIElement).properties.set(PropertyKey.MIN_VALUE, parameter5);
-              }
-            }
-            const parameter6 = this.getParameter(line, 6);
-            if (parameter6) {
-              if (keyword === 'input-text') {
-                (uiElement as UIElement).properties.set(PropertyKey.MAX_LENGTH, parameter6);
-              } else {
-                (uiElement as UIElement).properties.set(PropertyKey.MAX_VALUE, parameter6);
-              }
-            }
-          }
-          if (helpText) {
-            (uiElement as UIElement).helpText = helpText;
-          }
-        } else {
-          uiElement = new UIElement(`id${idSuffix}`, FieldType.SCRIPT_ERROR);
-          uiElement.properties.set(PropertyKey.TEXT,
-            `Scriptfehler Zeile ${lineNumber.toString()}: Variablenname fehlt`);
-        }
-        break;
-      case 'hr':
-        uiElement = new UIElement(`id${idSuffix}`, FieldType.HR);
-        break;
-      default:
-        uiElement = new UIElement(`id${idSuffix}`, FieldType.SCRIPT_ERROR);
-        uiElement.properties.set(PropertyKey.TEXT,
-          `Scriptfehler Zeile ${lineNumber.toString()}: ungültiges Schlüsselwort ${keyword}`);
-    }
-    return uiElement;
-  }
+  private parseScriptLines(oldResponses: Record<string, string>): void {
+    this.scriptLines.forEach(line => {
+      let elementToAdd: UIElement | UIBlock = null;
+      if (!line) {
+        elementToAdd = new UIElement('0', FieldType.TEXT);
+      } else if (DataService.getKeyword(line) === 'if-start') { // createIfBlock and add to stack
+        this.isLatestElementIfBlock = true;
+        const ifElseBlock = DataService.createIfElseBlock(line, this.idCounter);
 
-  private static parseScript(scriptLines: string[], oldResponses: Record<string, string>,
-                             idSuffix: string, lineNumberOffset: number): UIBlock {
-    const elementKeys = ['text', 'header', 'title', 'hr', 'html',
-      'input-text', 'input-number', 'checkbox', 'multiple-choice', 'drop-down'];
-    const newUIBlock = new UIBlock();
-    let localLineNumber = 0;
-    let localIdCounter = 1;
-    while (localLineNumber < scriptLines.length) {
-      let line = scriptLines[localLineNumber];
-      localLineNumber += 1;
-      line = line.trim();
-      if (line) {
-        const keyword = this.getKeyword(line);
-        if (keyword) {
-          if (elementKeys.includes(keyword)) {
-            this.addUIElement(newUIBlock, `${idSuffix}_${localIdCounter.toString()}`, keyword,
-              line, lineNumberOffset + localLineNumber + 1, oldResponses);
-            localIdCounter += 1;
-          } else if (keyword === 'repeat-start') {
-            const parameter1 = this.getParameter(line, 1);
-            const b = new RepeatBlock(parameter1);
-            b.properties.set(PropertyKey.TEXT, this.getParameter(line, 2));
-            b.properties.set(PropertyKey.TEXT2, this.getParameter(line, 3));
-            b.helpText = this.getHelpText(line);
-            const parameter4 = this.getParameter(line, 4);
-            if (parameter4) {
-              b.properties.set(PropertyKey.MAX_VALUE, parameter4);
-            }
-            const blockLines: string[] = [];
-            while (localLineNumber < scriptLines.length) {
-              const subLine = scriptLines[localLineNumber];
-              localLineNumber += 1;
-              const subKeyword = this.getKeyword(subLine);
-              if (subKeyword === 'repeat-end') {
-                break;
-              } else {
-                blockLines.push(subLine);
-              }
-            }
-            if (blockLines.length > 0) {
-              const tmpBlock = this.parseScript(blockLines, {},
-                `${idSuffix}_${localIdCounter.toString()}`,
-                localLineNumber + lineNumberOffset);
-              localIdCounter += 1;
-              b.templateElements = tmpBlock.elements;
-              if (oldResponses[b.id]) {
-                const valueNumberTry = Number(oldResponses[b.id]);
-                if (!Number.isNaN(valueNumberTry)) {
-                  b.value = oldResponses[b.id];
-                  b.setSubBlockNumber(valueNumberTry, oldResponses);
-                }
-              }
-              newUIBlock.elements.push(b);
-            }
-          } else if (keyword === 'if-start') {
-            const ifThenElseBlock = new IfThenElseBlock(`${idSuffix}_${localIdCounter.toString()}`,
-              this.getParameter(line, 1),
-              this.getParameter(line, 2));
-            localIdCounter += 1;
-            let nesting = 0;
-            let isElseBlock = false;
-            const trueBlockLines: string[] = [];
-            const falseBlockLines: string[] = [];
-            while (localLineNumber < scriptLines.length) {
-              const subLine = scriptLines[localLineNumber];
-              localLineNumber += 1;
-              const subKeyword = this.getKeyword(subLine);
-              if (subKeyword === 'if-start') {
-                nesting += 1;
-                if (isElseBlock) {
-                  falseBlockLines.push(subLine);
-                } else {
-                  trueBlockLines.push(subLine);
-                }
-              } else if (subKeyword === 'if-else') {
-                if (nesting === 0) {
-                  isElseBlock = true;
-                } else if (isElseBlock) {
-                  falseBlockLines.push(subLine);
-                } else {
-                  trueBlockLines.push(subLine);
-                }
-              } else if (subKeyword === 'if-end') {
-                if (nesting === 0) {
-                  break;
-                } else {
-                  nesting -= 1;
-                  if (isElseBlock) {
-                    falseBlockLines.push(subLine);
-                  } else {
-                    trueBlockLines.push(subLine);
-                  }
-                }
-              } else if (isElseBlock) {
-                falseBlockLines.push(subLine);
-              } else {
-                trueBlockLines.push(subLine);
-              }
-            }
-            if (trueBlockLines.length > 0) {
-              let tmpBlock = this.parseScript(trueBlockLines, {},
-                `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
-              localIdCounter += 1;
-              ifThenElseBlock.trueElements = tmpBlock.elements;
-              if (falseBlockLines.length > 0) {
-                tmpBlock = this.parseScript(falseBlockLines, {},
-                  `${idSuffix}_${localIdCounter.toString()}`, localLineNumber + lineNumberOffset);
-                localIdCounter += 1;
-                ifThenElseBlock.falseElements = tmpBlock.elements;
-              }
-              // todo oldResponses
-              newUIBlock.elements.push(ifThenElseBlock);
-            }
-          } else {
-            this.addErrorElement(newUIBlock, `${idSuffix}_${localIdCounter.toString()}`,
-              (lineNumberOffset + localLineNumber).toString());
-            localIdCounter += 1;
-          }
+        this.ifNestingStack.push({
+          isTrueBranch: true,
+          uiBlock: ifElseBlock
+        });
+      } else if (DataService.getKeyword(line) === 'if-else') { // switch to true branch of last object
+        this.ifNestingStack[this.ifNestingStack.length - 1].isTrueBranch = false;
+      } else if (DataService.getKeyword(line) === 'if-end') { // remove last object and mark for adding
+        this.isLatestElementIfBlock = false;
+        elementToAdd = this.ifNestingStack.pop().uiBlock as unknown as UIBlock;
+      } else if (DataService.getKeyword(line) === 'repeat-start') {
+        this.isLatestElementIfBlock = false;
+        // TODO Fehlerbehandlung: fehlende Params
+        const repeatBlockElement = DataService.createRepeatBlock(line); // TODO id?
+        // TODO help text
+        if (repeatBlockElement instanceof UIElement) {
+          elementToAdd = repeatBlockElement;
         } else {
-          this.addErrorElement(newUIBlock, `${idSuffix}_${localIdCounter.toString()}`,
-            (lineNumberOffset + localLineNumber).toString());
-          localIdCounter += 1;
+          this.repeatNestingStack.push(repeatBlockElement);
         }
+      } else if (DataService.getKeyword(line) === 'repeat-end') {
+        elementToAdd = this.repeatNestingStack.pop();
       } else {
-        this.addEmptyLineElement(newUIBlock, `${idSuffix}_${localIdCounter.toString()}`);
-        localIdCounter += 1;
+        elementToAdd = DataService.parseElement(line, this.idCounter);
       }
+
+      if (elementToAdd) {
+        // console.log('adding: ', elementToAdd);
+        // TODO repeat in if not working
+        if (this.repeatNestingStack.length > 0 && !this.isLatestElementIfBlock) {
+          const lastRepeatBlock = this.repeatNestingStack[this.repeatNestingStack.length - 1];
+          lastRepeatBlock.templateElements.push(elementToAdd);
+        } else if (this.ifNestingStack.length > 0 && this.isLatestElementIfBlock) {
+          const ifStackCompoundObject = this.ifNestingStack[this.ifNestingStack.length - 1];
+          if (ifStackCompoundObject.isTrueBranch) {
+            (ifStackCompoundObject.uiBlock as IfThenElseBlock).trueElements.push(elementToAdd);
+          } else {
+            (ifStackCompoundObject.uiBlock as IfThenElseBlock).falseElements.push(elementToAdd);
+          }
+        } else {
+          this.rootBlock.elements.push(elementToAdd);
+        }
+      }
+    });
+  }
+
+  private static parseElement(line: string, id): UIElement {
+    const keyword = DataService.getKeyword(line);
+    switch (keyword) {
+      case 'text': // falls through
+      case 'header': // falls through
+      case 'title': // falls through
+      case 'html':
+        return DataService.createTextElement(line, id);
+      case 'hr':
+        return new UIElement('0', FieldType.HR);
+      case 'rem': // TODO keine Leerzeile
+        return new UIElement('0', FieldType.TEXT);
+      case 'input-text':
+        return DataService.createTextInputElement(line, id);
+      case 'input-number':
+        return DataService.createNumberInputElement(line, id);
+      case 'checkbox':
+        return DataService.createCheckboxElement(line, id);
+      case 'multiple-choice':
+        return DataService.createMultiChoiceElement(line, id);
+      default:
+        return DataService.createErrorElement(`Scriptfehler - Schlüsselwort nicht erkannt: "${line}"`);
     }
-    return newUIBlock;
   }
 
-  private static addUIElement(newUIBlock, id, keyword, line, lineNumber, oldResponses) {
-    const newElement = this.readUIElement(keyword, line, id, lineNumber);
-    if (oldResponses[newElement.id]) {
-      newElement.value = oldResponses[newElement.id];
+  private static createTextElement(line, id): UIElement {
+    const textParam = this.getParameter(line, 1);
+    if (!textParam) {
+      return DataService.createErrorElement(
+        `Scriptfehler - Parameter fehlt: "${line}"`
+      );
     }
-    newUIBlock.elements.push(newElement);
+    const capitalizedKeyword = this.getKeyword(line).toUpperCase().replace(/[-]/g, '_');
+    const fieldType = FieldType[capitalizedKeyword];
+    return new TextElement(id, fieldType, textParam, this.getHelpText(line));
   }
 
-  private static addErrorElement(newUIBlock, id, lineNumber) {
-    const errorElement = new UIElement(id, FieldType.SCRIPT_ERROR);
-    errorElement.properties.set(PropertyKey.TEXT, `Scriptfehler Zeile ${lineNumber}: Schlüssel nicht erkannt`);
-    newUIBlock.elements.push(errorElement);
+  private static createTextInputElement(line, id): UIElement {
+    const variableParam = this.getParameter(line, 1);
+    if (!variableParam) {
+      return DataService.createErrorElement(
+        `Scriptfehler - Parameter fehlt: "${line}"`
+      );
+    }
+    const required = (this.getParameter(line, 2) && this.getParameter(line, 2) === '1');
+    const textBefore = this.getParameter(line, 3);
+    const textAfter = this.getParameter(line, 4);
+    const maxLines = this.getParameter(line, 5);
+    const maxLength = this.getParameter(line, 6);
+    return new TextInputElement(id, variableParam, required, textBefore, textAfter, maxLines, maxLength,
+      this.getHelpText(line));
   }
 
-  private static addEmptyLineElement(newUIBlock, id) {
-    newUIBlock.elements.push(new UIElement(id, FieldType.TEXT));
+  private static createNumberInputElement(line, id): UIElement {
+    const variableParam = this.getParameter(line, 1);
+    if (!variableParam) {
+      return DataService.createErrorElement(
+        `Scriptfehler - Parameter fehlt: "${line}"`
+      );
+    }
+    const required = (this.getParameter(line, 2) && this.getParameter(line, 2) === '1');
+    const textBefore = this.getParameter(line, 3);
+    const textAfter = this.getParameter(line, 4);
+    const minValue = this.getParameter(line, 5);
+    const maxValue = this.getParameter(line, 6);
+    return new NumberInputElement(id, variableParam, required, textBefore, textAfter, minValue, maxValue,
+      this.getHelpText(line));
+  }
+
+  private static createCheckboxElement(line: string, id: string) {
+    const variableParam = this.getParameter(line, 1);
+    if (!variableParam) {
+      return DataService.createErrorElement(
+        `Scriptfehler - Parameter fehlt: "${line}"`
+      );
+    }
+    const required = (this.getParameter(line, 2) && this.getParameter(line, 2) === '1');
+    const textBefore = this.getParameter(line, 3);
+    const textAfter = this.getParameter(line, 4);
+    return new CheckboxElement(id, variableParam, required, textBefore, textAfter, this.getHelpText(line));
+  }
+
+  private static createMultiChoiceElement(line: string, id: string) {
+    const variableParam = this.getParameter(line, 1);
+    if (!variableParam) {
+      return DataService.createErrorElement(
+        `Scriptfehler - Parameter fehlt: "${line}"`
+      );
+    }
+    const required = (this.getParameter(line, 2) && this.getParameter(line, 2) === '1');
+    const textBefore = this.getParameter(line, 3);
+    const textAfter = this.getParameter(line, 4);
+    return new MultiChoiceElement(id, variableParam, required, textBefore, textAfter, this.getHelpText(line));
+  }
+
+  private static createErrorElement(errorText: string): UIElement {
+    return new ErrorElement('0', errorText);
+  }
+
+  private static createIfElseBlock(line, id): UIBlock {
+    // TODO check params for errors
+    return new IfThenElseBlock(id.toString(),
+      DataService.getParameter(line, 1),
+      DataService.getParameter(line, 2));
+  }
+
+  private static createRepeatBlock(line): UIElement | RepeatBlock {
+    const variableParam = DataService.getParameter(line, 1);
+    if (!variableParam) {
+      return DataService.createErrorElement(
+        `Scriptfehler - Parameter fehlt: "${line}"`
+      );
+    }
+    const repeatBlock = new RepeatBlock(variableParam); // TODO id?
+
+    const textBefore = DataService.getParameter(line, 2);
+    if (textBefore) {
+      repeatBlock.properties.set(PropertyKey.TEXT, textBefore);
+    }
+    const blockHeading = DataService.getParameter(line, 3);
+    if (blockHeading) {
+      repeatBlock.properties.set(PropertyKey.TEXT2, blockHeading);
+    }
+    const maxBlocks = DataService.getParameter(line, 4);
+    if (maxBlocks) {
+      repeatBlock.properties.set(PropertyKey.MAX_VALUE, maxBlocks);
+    }
+    repeatBlock.helpText = DataService.getHelpText(line);
+
+    return repeatBlock;
   }
 
   private static getBlockValues(b: UIBlock): Record<string, string> {

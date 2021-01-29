@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ElementComponent } from '../element.component';
 import { PropertyKey } from '../../classes/interfaces';
-import { UIElement } from '../../classes/UIElement';
+import { InputElement } from '../../classes/UIElement';
 
 @Component({
   selector: 'player-checkbox',
@@ -30,7 +30,8 @@ export class CheckboxComponent extends ElementComponent implements OnInit, OnDes
   valueChangeSubscription: Subscription = null;
 
   ngOnInit(): void {
-    if (this.elementData instanceof UIElement) {
+    // if (this.elementData instanceof UIElement) {
+    if (this.elementData instanceof InputElement) {
       this.preText = this.elementData.properties.get(PropertyKey.TEXT);
       this.postText = this.elementData.properties.get(PropertyKey.TEXT2);
       if (this.elementData.required) {

@@ -25,7 +25,7 @@ export class UIBlock implements UIElementOrBlock {
 export class RepeatBlock extends UIBlock {
   id = '';
   properties: Map<PropertyKey, string> = new Map();
-  templateElements: (UIElement | UIBlock)[];
+  templateElements: (UIElement | UIBlock)[] = [];
   value = '';
   helpText = '';
 
@@ -78,16 +78,29 @@ export class IfThenElseBlock extends UIBlock {
   conditionTrueValue = '';
   trueElements: (UIElement | UIBlock)[] = [];
   falseElements: (UIElement | UIBlock)[] = [];
+  conditionVariableNameAffix: number = 0;
 
   constructor(id: string, conditionVariableName: string, conditionTrueValue: string) {
+  // constructor(id: string, conditionVariableName: string, conditionTrueValue: string,
+  //             conditionVariableNameAffix: number = 0) {
     super();
     this.id = id;
+    // this.conditionVariableNameAffix = conditionVariableNameAffix;
+    // if (conditionVariableNameAffix > 0) {
+    //   this.conditionVariableName = conditionVariableName + conditionVariableNameAffix;
+    // } else {
     this.conditionVariableName = conditionVariableName;
+    // }
     this.conditionTrueValue = conditionTrueValue;
   }
 
   getCopy(idSuffix = ''): IfThenElseBlock {
-    const myReturn = new IfThenElseBlock(this.id + idSuffix, this.conditionVariableName, this.conditionTrueValue);
+    // if (this.conditionVariableNameAffix) {
+    //   this.conditionVariableNameAffix += 1;
+    // }
+    const myReturn = new IfThenElseBlock(this.id + idSuffix,
+      this.conditionVariableName + idSuffix,
+      this.conditionTrueValue);
     this.trueElements.forEach(e => {
       myReturn.trueElements.push(e.getCopy(idSuffix));
     });
@@ -95,6 +108,7 @@ export class IfThenElseBlock extends UIBlock {
       myReturn.falseElements.push(e.getCopy(idSuffix));
     });
     myReturn.value = this.value;
+    console.log('returning copy of ifBlock:', myReturn);
     return myReturn;
   }
 
@@ -128,6 +142,6 @@ export class IfThenElseBlock extends UIBlock {
         }
       });
     }
-    console.log('check', this.id);
+    // console.log('check', this.id);
   }
 }
