@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IfThenElseBlock, RepeatBlock, UIBlock } from './classes/UIBlock';
-import { FieldType, PropertyKey } from './classes/interfaces';
+import { FieldType } from './classes/interfaces';
 import {
   CheckboxElement, ErrorElement,
   MultiChoiceElement,
@@ -12,41 +12,31 @@ import {
 import { environment } from '../environments/environment';
 
 type IfStackObjectKey = 'isTrueBranch' | 'uiBlock';
+type IfElementCompoundObject = Record<IfStackObjectKey, UIBlock | boolean>; // holds IfBlock and true/false branch state
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
-  rootBlock = new UIBlock();
+  rootBlock: UIBlock = new UIBlock('0');
   private scriptLines: string[] = [];
   private _idCounter = 0;
 
-  private ifNestingStack: Record<IfStackObjectKey, UIBlock | boolean>[] = [];
-  private repeatNestingStack: RepeatBlock[] = [];
-  private isLatestElementIfBlock = false;
+  private latestBlock: Array<IfElementCompoundObject | RepeatBlock> = []; // add parsed elements to last opened block
 
   get idCounter(): string {
     this._idCounter += 1;
     return this._idCounter.toString();
   }
 
-  // TODO oldResponses
   setElements(scriptLines: string[], oldResponses: Record<string, string>): void {
     const errorMessage = DataService.checkScriptHeader(scriptLines[0]);
     if (errorMessage !== '') {
-      this.rootBlock = new UIBlock();
-      const errorElement = new UIElement('SCRIPT_ERROR', FieldType.SCRIPT_ERROR);
-      errorElement.properties.set(PropertyKey.TEXT, errorMessage);
-      this.rootBlock.elements.push(errorElement);
+      this.rootBlock.elements.push(DataService.createErrorElement(errorMessage));
     } else {
       scriptLines.splice(0, 1);
       this.scriptLines = scriptLines;
-      // const testBlock = DataService.parseScript(scriptLines, oldResponses, '', 0);
-      // console.log('testBlock', testBlock);
-      // this.rootBlock = testBlock;
-      // TODO basic error check: same amount of start and ends for example
       this.parseScriptLines(oldResponses);
-      console.log('rootBlock', this.rootBlock);
       this.rootBlock.check(oldResponses);
     }
   }
@@ -99,52 +89,56 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
     return null;
   }
 
+  // TODO basic error check: same amount of start and ends for example, fehlende parameter
+  // TODO remove rem lines
   private parseScriptLines(oldResponses: Record<string, string>): void {
     this.scriptLines.forEach(line => {
       let elementToAdd: UIElement | UIBlock = null;
       if (!line) {
         elementToAdd = new UIElement('0', FieldType.TEXT);
       } else if (DataService.getKeyword(line) === 'if-start') { // createIfBlock and add to stack
-        this.isLatestElementIfBlock = true;
         const ifElseBlock = DataService.createIfElseBlock(line, this.idCounter);
 
-        this.ifNestingStack.push({
-          isTrueBranch: true,
-          uiBlock: ifElseBlock
-        });
+        if (ifElseBlock instanceof UIElement) { // error case
+          elementToAdd = ifElseBlock;
+        } else {
+          this.latestBlock.push({
+            isTrueBranch: true,
+            uiBlock: ifElseBlock
+          });
+        }
       } else if (DataService.getKeyword(line) === 'if-else') { // switch to true branch of last object
-        this.ifNestingStack[this.ifNestingStack.length - 1].isTrueBranch = false;
+        (this.latestBlock[this.latestBlock.length - 1] as Record<IfStackObjectKey, UIBlock | boolean>).isTrueBranch =
+          false;
       } else if (DataService.getKeyword(line) === 'if-end') { // remove last object and mark for adding
-        this.isLatestElementIfBlock = false;
-        elementToAdd = this.ifNestingStack.pop().uiBlock as unknown as UIBlock;
+        elementToAdd =
+          (this.latestBlock.pop() as Record<IfStackObjectKey, UIBlock | boolean>).uiBlock as unknown as UIBlock;
       } else if (DataService.getKeyword(line) === 'repeat-start') {
-        this.isLatestElementIfBlock = false;
-        // TODO Fehlerbehandlung: fehlende Params
-        const repeatBlockElement = DataService.createRepeatBlock(line); // TODO id?
-        // TODO help text
+        const repeatBlockElement = DataService.createRepeatBlock(line);
         if (repeatBlockElement instanceof UIElement) {
           elementToAdd = repeatBlockElement;
         } else {
-          this.repeatNestingStack.push(repeatBlockElement);
+          this.latestBlock.push(repeatBlockElement);
         }
       } else if (DataService.getKeyword(line) === 'repeat-end') {
-        elementToAdd = this.repeatNestingStack.pop();
+        elementToAdd = this.latestBlock.pop() as RepeatBlock;
       } else {
         elementToAdd = DataService.parseElement(line, this.idCounter);
       }
 
       if (elementToAdd) {
-        // console.log('adding: ', elementToAdd);
-        // TODO repeat in if not working
-        if (this.repeatNestingStack.length > 0 && !this.isLatestElementIfBlock) {
-          const lastRepeatBlock = this.repeatNestingStack[this.repeatNestingStack.length - 1];
-          lastRepeatBlock.templateElements.push(elementToAdd);
-        } else if (this.ifNestingStack.length > 0 && this.isLatestElementIfBlock) {
-          const ifStackCompoundObject = this.ifNestingStack[this.ifNestingStack.length - 1];
-          if (ifStackCompoundObject.isTrueBranch) {
-            (ifStackCompoundObject.uiBlock as IfThenElseBlock).trueElements.push(elementToAdd);
+        if (oldResponses[elementToAdd.id]) {
+          elementToAdd.value = oldResponses[elementToAdd.id];
+        }
+
+        if (this.latestBlock.length > 0) {
+          const latestBlock = this.latestBlock[this.latestBlock.length - 1];
+          if (latestBlock instanceof RepeatBlock) {
+            latestBlock.templateElements.push(elementToAdd);
+          } else if (latestBlock.isTrueBranch) {
+            (latestBlock.uiBlock as IfThenElseBlock).trueElements.push(elementToAdd);
           } else {
-            (ifStackCompoundObject.uiBlock as IfThenElseBlock).falseElements.push(elementToAdd);
+            (latestBlock.uiBlock as IfThenElseBlock).falseElements.push(elementToAdd);
           }
         } else {
           this.rootBlock.elements.push(elementToAdd);
@@ -163,7 +157,7 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
         return DataService.createTextElement(line, id);
       case 'hr':
         return new UIElement('0', FieldType.HR);
-      case 'rem': // TODO keine Leerzeile
+      case 'rem': // TODO remove
         return new UIElement('0', FieldType.TEXT);
       case 'input-text':
         return DataService.createTextInputElement(line, id);
@@ -252,11 +246,15 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
     return new ErrorElement('0', errorText);
   }
 
-  private static createIfElseBlock(line, id): UIBlock {
-    // TODO check params for errors
-    return new IfThenElseBlock(id.toString(),
-      DataService.getParameter(line, 1),
-      DataService.getParameter(line, 2));
+  private static createIfElseBlock(line, id): UIElement | UIBlock {
+    const variableParam = DataService.getParameter(line, 1);
+    const valueParam = DataService.getParameter(line, 2);
+    if (!variableParam || !valueParam) {
+      return DataService.createErrorElement(
+        `Scriptfehler - Parameter fehlt: "${line}"`
+      );
+    }
+    return new IfThenElseBlock(id.toString(), variableParam, valueParam);
   }
 
   private static createRepeatBlock(line): UIElement | RepeatBlock {
@@ -266,23 +264,11 @@ Unterstützte Versionen: ${supportedMajorVersions}`;
         `Scriptfehler - Parameter fehlt: "${line}"`
       );
     }
-    const repeatBlock = new RepeatBlock(variableParam); // TODO id?
 
-    const textBefore = DataService.getParameter(line, 2);
-    if (textBefore) {
-      repeatBlock.properties.set(PropertyKey.TEXT, textBefore);
-    }
-    const blockHeading = DataService.getParameter(line, 3);
-    if (blockHeading) {
-      repeatBlock.properties.set(PropertyKey.TEXT2, blockHeading);
-    }
-    const maxBlocks = DataService.getParameter(line, 4);
-    if (maxBlocks) {
-      repeatBlock.properties.set(PropertyKey.MAX_VALUE, maxBlocks);
-    }
-    repeatBlock.helpText = DataService.getHelpText(line);
-
-    return repeatBlock;
+    const textBefore = this.getParameter(line, 2);
+    const textAfter = this.getParameter(line, 3);
+    const maxBlocks = this.getParameter(line, 4);
+    return new RepeatBlock(variableParam, textBefore, textAfter, maxBlocks, DataService.getHelpText(line));
   }
 
   private static getBlockValues(b: UIBlock): Record<string, string> {

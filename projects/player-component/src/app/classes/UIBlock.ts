@@ -3,10 +3,16 @@ import { UIElement, UIElementOrBlock } from './UIElement';
 import { PropertyKey } from './interfaces';
 
 export class UIBlock implements UIElementOrBlock {
+  id = '';
+  value = '';
   elements: (UIElement | UIBlock)[] = [];
 
+  constructor(id: string) {
+    this.id = id;
+  }
+
   getCopy(idSuffix = ''): UIBlock {
-    const myReturn = new UIBlock();
+    const myReturn = new UIBlock(this.id);
     this.elements.forEach(e => {
       myReturn.elements.push(e.getCopy(idSuffix));
     });
@@ -23,19 +29,21 @@ export class UIBlock implements UIElementOrBlock {
 }
 
 export class RepeatBlock extends UIBlock {
-  id = '';
   properties: Map<PropertyKey, string> = new Map();
   templateElements: (UIElement | UIBlock)[] = [];
-  value = '';
   helpText = '';
 
-  constructor(id: string) {
-    super();
-    this.id = id;
+  constructor(id: string, textBefore:string = '', textAfter:string = '', maxBlocks: string = '',
+              helpText: string = '') {
+    super(id);
+    this.helpText = helpText;
+    if (textBefore) this.properties.set(PropertyKey.TEXT, textBefore);
+    if (textAfter) this.properties.set(PropertyKey.TEXT2, textAfter);
+    if (maxBlocks) this.properties.set(PropertyKey.MAX_VALUE, maxBlocks);
   }
 
   getCopy(idSuffix = ''): RepeatBlock {
-    const myReturn = new RepeatBlock(this.id + idSuffix);
+    const myReturn = new RepeatBlock(this.id + idSuffix, '', '', '', this.helpText);
     this.properties.forEach((value, key) => {
       myReturn.properties.set(key, value);
     });
@@ -54,7 +62,7 @@ export class RepeatBlock extends UIBlock {
       if (i < oldSubBlockNumber) {
         newBlocks.push(this.elements[i]);
       } else {
-        const newBlock = new UIBlock();
+        const newBlock = new UIBlock(this.id);
         this.templateElements.forEach(templateElement => {
           const newElement = templateElement.getCopy(`_${(i + 1).toString()}`);
           if (newElement instanceof UIElement) {
@@ -72,8 +80,6 @@ export class RepeatBlock extends UIBlock {
 }
 
 export class IfThenElseBlock extends UIBlock {
-  id = '';
-  value = '';
   conditionVariableName = '';
   conditionTrueValue = '';
   trueElements: (UIElement | UIBlock)[] = [];
@@ -81,23 +87,12 @@ export class IfThenElseBlock extends UIBlock {
   conditionVariableNameAffix: number = 0;
 
   constructor(id: string, conditionVariableName: string, conditionTrueValue: string) {
-  // constructor(id: string, conditionVariableName: string, conditionTrueValue: string,
-  //             conditionVariableNameAffix: number = 0) {
-    super();
-    this.id = id;
-    // this.conditionVariableNameAffix = conditionVariableNameAffix;
-    // if (conditionVariableNameAffix > 0) {
-    //   this.conditionVariableName = conditionVariableName + conditionVariableNameAffix;
-    // } else {
+    super(id);
     this.conditionVariableName = conditionVariableName;
-    // }
     this.conditionTrueValue = conditionTrueValue;
   }
 
   getCopy(idSuffix = ''): IfThenElseBlock {
-    // if (this.conditionVariableNameAffix) {
-    //   this.conditionVariableNameAffix += 1;
-    // }
     const myReturn = new IfThenElseBlock(this.id + idSuffix,
       this.conditionVariableName + idSuffix,
       this.conditionTrueValue);
@@ -108,7 +103,6 @@ export class IfThenElseBlock extends UIBlock {
       myReturn.falseElements.push(e.getCopy(idSuffix));
     });
     myReturn.value = this.value;
-    console.log('returning copy of ifBlock:', myReturn);
     return myReturn;
   }
 
@@ -142,6 +136,5 @@ export class IfThenElseBlock extends UIBlock {
         }
       });
     }
-    // console.log('check', this.id);
   }
 }

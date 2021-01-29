@@ -11,20 +11,18 @@ export class UIElementOrBlock {
 export class UIElement implements UIElementOrBlock {
   id = '';
   fieldType: FieldType;
-  // required = false;
   value = '';
   properties: Map<PropertyKey, string> = new Map();
   helpText = '';
 
   constructor(id: string, fieldType: FieldType, helpText: string = '') {
-    this.id = id; // TODO weg
+    this.id = id; // TODO gehört eigentlich nur in InputElement. Sollte aus anderen Typen rausrefactored werden
     this.fieldType = fieldType;
     this.helpText = helpText;
   }
 
   getCopy(idSuffix = ''): UIElement {
     const myReturn = new UIElement(this.id + idSuffix, this.fieldType, this.helpText);
-    // myReturn.required = this.required;
     this.properties.forEach((value, key) => {
       myReturn.properties.set(key, value);
     });
@@ -38,7 +36,7 @@ export class UIElement implements UIElementOrBlock {
 
 export class InputElement extends UIElement {
   required = false;
-  constructor(id: string, fieldType, required, helpText) {
+  constructor(id: string, fieldType: FieldType, required: boolean, helpText: string) {
     super(id, fieldType, helpText);
     this.required = required;
   }
@@ -58,42 +56,42 @@ export class TextElement extends UIElement {
 }
 
 export class TextInputElement extends InputElement {
-  constructor(id: string, variableParam, required, textBefore: string, textAfter: string,
-              maxLines, maxLength, helpText: string) {
-    super(id, FieldType.INPUT_TEXT, required, helpText);
-    this.properties.set(PropertyKey.TEXT, textBefore);
-    this.properties.set(PropertyKey.TEXT2, textAfter);
-    this.properties.set(PropertyKey.LINES_NUMBER, maxLines);
-    this.properties.set(PropertyKey.MAX_LENGTH, maxLength);
+  constructor(id: string, variableParam: string, required: boolean, textBefore: string, textAfter: string,
+              maxLines: string, maxLength: string, helpText: string) {
+    super(variableParam, FieldType.INPUT_TEXT, required, helpText);
+    if (textBefore) this.properties.set(PropertyKey.TEXT, textBefore);
+    if (textAfter) this.properties.set(PropertyKey.TEXT2, textAfter);
+    if (maxLines) this.properties.set(PropertyKey.LINES_NUMBER, maxLines);
+    if (maxLength) this.properties.set(PropertyKey.MAX_LENGTH, maxLength);
   }
 }
 
 export class NumberInputElement extends InputElement {
-  constructor(id: string, variableParam, required, textBefore: string, textAfter: string,
-              minValue, maxValue, helpText: string) {
-    super(id, FieldType.INPUT_NUMBER, required, helpText);
-    this.properties.set(PropertyKey.TEXT, textBefore);
-    this.properties.set(PropertyKey.TEXT2, textAfter);
-    this.properties.set(PropertyKey.MIN_VALUE, minValue);
-    this.properties.set(PropertyKey.MAX_VALUE, maxValue);
+  constructor(id: string, variableParam: string, required: boolean, textBefore: string, textAfter: string,
+              minValue: string, maxValue: string, helpText: string) {
+    super(variableParam, FieldType.INPUT_NUMBER, required, helpText);
+    if (textBefore) this.properties.set(PropertyKey.TEXT, textBefore);
+    if (textAfter) this.properties.set(PropertyKey.TEXT2, textAfter);
+    if (minValue) this.properties.set(PropertyKey.MIN_VALUE, minValue);
+    if (maxValue) this.properties.set(PropertyKey.MAX_VALUE, maxValue);
   }
 }
 
 export class CheckboxElement extends InputElement {
-  constructor(id: string, variableParam, required, textBefore: string, textAfter: string,
+  constructor(id: string, variableParam: string, required: boolean, textBefore: string, textAfter: string,
               helpText: string) {
-    super(id, FieldType.CHECKBOX, required, helpText);
-    this.properties.set(PropertyKey.TEXT, textBefore);
-    this.properties.set(PropertyKey.TEXT2, textAfter);
+    super(variableParam, FieldType.CHECKBOX, required, helpText);
+    if (textBefore) this.properties.set(PropertyKey.TEXT, textBefore);
+    if (textAfter) this.properties.set(PropertyKey.TEXT2, textAfter);
   }
 }
 
 export class MultiChoiceElement extends InputElement {
-  constructor(id: string, variableParam, required, textBefore: string, textAfter: string,
+  constructor(id: string, variableParam: string, required: boolean, textBefore: string, textAfter: string,
               helpText: string) {
-    super(id, FieldType.MULTIPLE_CHOICE, required, helpText);
-    this.properties.set(PropertyKey.TEXT, textBefore);
-    this.properties.set(PropertyKey.TEXT2, textAfter);
+    super(variableParam, FieldType.MULTIPLE_CHOICE, required, helpText);
+    if (textBefore) this.properties.set(PropertyKey.TEXT, textBefore);
+    if (textAfter) this.properties.set(PropertyKey.TEXT2, textAfter);
   }
 }
 
