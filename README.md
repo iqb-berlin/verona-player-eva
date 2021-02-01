@@ -1,6 +1,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/iqb-berlin/verona-player-eva?style=flat-square)
 
+Attention: This repository is archived. Future development of the player is done here:
+https://github.com/iqb-berlin/verona-player-abi
+
 # IQB Verona Player Eva 
 Verona interfaces are specifications concerning computer based assessment. You can learn 
 more about this German initiative [here](https://github.com/verona-interfaces/introduction).
